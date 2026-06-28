@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống IoT - Điều Khiển & Xuất Excel</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #121212; color: #ffffff;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        /* --- STYLE MÀN HÌNH ĐĂNG NHẬP BẢO MẬT --- */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #121212; display: flex; justify-content: center; align-items: center;
+            z-index: 9999; transition: opacity 0.4s ease, visibility 0.4s;
+        }
+        .login-box {
+            width: 100%; max-width: 400px; padding: 35px;
+            background: #1e1e1e; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); border: 1px solid #2d2d2d;
+            text-align: center;
+        }
+        .login-box h3 { color: #00adb5; text-transform: uppercase; margin-bottom: 25px; font-size: 20px; letter-spacing: 1px; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; }
+        .input-group input {
+            width: 100%; background: #252525; color: white; border: 1px solid #333;
+            padding: 12px; border-radius: 8px; font-size: 15px; outline: none; transition: border 0.2s;
+        }
+        .input-group input:focus { border-color: #00adb5; }
+        .btn-login {
+            width: 100%; background: #00adb5; color: white; border: none; padding: 12px;
+            font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .btn-login:hover { background: #008c95; }
+        .error-msg { color: #ff5722; font-size: 13px; margin-top: 15px; display: none; }
+
+        /* --- STYLE CONTAINER CHÍNH --- */
+        .container {
+            display: none;
+            width: 100%; max-width: 700px; padding: 25px;
+            background: #1e1e1e; border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); text-align: center; border: 1px solid #2d2d2d;
+        }
+        h2 { font-size: 22px; margin-bottom: 5px; color: #00adb5; text-transform: uppercase; }
+        p.subtitle { font-size: 13px; color: #777; margin-bottom: 20px; }
+        .card-container { display: flex; gap: 15px; margin-bottom: 15px; }
+        .card {
+            flex: 1; background: #252525; padding: 15px; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: flex-start; border-left: 5px solid #333;
+        }
+        .card.temp { border-left-color: #ff5722; }
+        .card.hum { border-left-color: #00bcd4; }
+        .info label { font-size: 12px; color: #aaa; text-transform: uppercase; margin-bottom: 5px; }
+        .info .value { font-size: 24px; font-weight: bold; font-family: 'Segoe UI', sans-serif; }
+        .temp .value { color: #ff5722; }
+        .hum .value { color: #00bcd4; }
+        
+        /* --- NÚT GẠT CÔNG TẮC (TỐI ƯU CHO ĐIỆN THOẠI) --- */
+        .control-devices {
+            background: #252525; padding: 15px; border-radius: 12px;
+            margin-bottom: 20px; border: 1px solid #2d2d2d;
+            display: flex; flex-direction: column; gap: 15px; text-align: left;
+        }
+        .control-devices label.title-label { font-size: 12px; color: #aaa; text-transform: uppercase; font-weight: bold;}
+        
+        .switch-group { display: flex; justify-content: space-between; gap: 20px; }
+        .switch-item {
+            flex: 1; background: #1e1e1e; padding: 12px 15px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: space-between;
+            border: 1px solid #2d2d2d;
+        }
+        .switch-name { font-size: 14px; font-weight: bold; color: #ccc; }
+        
+        .toggle-switch {
+            position: relative; display: inline-block; width: 60px; height: 32px;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #444; border-radius: 34px; transition: all 0.2s ease-in-out;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px;
+            background-color: #fff; border-radius: 50%; transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .toggle-switch input:checked + .slider { background-color: #2e7d32; box-shadow: 0 0 12px rgba(76, 175, 80, 0.6); }
+        .toggle-switch input:checked + .slider:before { transform: translateX(28px); }
+        
+        .control-panel {
+            background: #252525; padding: 15px; border-radius: 12px;
+            margin-bottom: 20px; border: 1px solid #2d2d2d;
+            display: flex; gap: 10px; align-items: center; justify-content: space-between;
+        }
+        .control-panel input[type="date"] {
+            background: #1e1e1e; color: white; border: 1px solid #333;
+            padding: 10px; border-radius: 6px; font-size: 14px; outline: none; flex: 1;
+        }
+        .btn-excel {
+            background: #4caf50; color: white; border: none; padding: 10px 18px; 
+            font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-excel:hover { background: #43a047; }
+        .chart-container { background: #252525; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2d2d2d; cursor: grab; }
+        .chart-container:active { cursor: grabbing; }
+        
+        /* Đèn trạng thái đồng bộ hệ thống */
+        .status { font-size: 12px; color: #4caf50; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        .dot { width: 8px; height: 8px; background-color: #4caf50; border-radius: 50%; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .tip { font-size: 11px; color: #666; margin-top: -15px; margin-bottom: 15px; text-align: right; }
+    </style>
+</head>
+<body>
+
+<div class="login-overlay" id="login-overlay">
+    <div class="login-box">
+        <h3>Kho Trứng Bel Gà - Đăng Nhập</h3>
+        <div class="input-group">
+            <label>Email quản trị</label>
+            <input type="email" id="username" placeholder="Nhập email đăng nhập...">
+        </div>
+        <div class="input-group">
+            <label>Mật khẩu</label>
+            <input type="password" id="password" placeholder="Nhập mật khẩu...">
+        </div>
+        <button class="btn-login" id="btn-login">XÁC THỰC AN TOÀN VỚI GOOGLE</button>
+        <div class="error-msg" id="error-msg">⚠️ Sai tài khoản/mật khẩu hoặc quyền truy cập bị từ chối!</div>
+    </div>
+</div>
+
+<div class="container" id="main-container">
+    <h2>Hệ Thống Giám Sát Kho Trứng Bel Gà Tân Châu 2</h2>
+    <p class="subtitle">Mặc định hiển thị ngày hôm nay - Chọn ngày để xem lịch sử cũ</p>
+
+    <div class="card-container">
+        <div class="card temp">
+            <div class="info"><label>Nhiệt Độ (Mới nhất)</label><div class="value"><span id="txt-temp">No Signal</span></div></div>
+        </div>
+        <div class="card hum">
+            <div class="info"><label>Độ Ẩm (Mới nhất)</label><div class="value"><span id="txt-hum">No Signal</span></div></div>
+        </div>
+    </div>
+
+    <div class="control-devices">
+        <label class="title-label">Bảng Điều Khiển Thiết Bị (Chân IO ESP32)</label>
+        <div class="switch-group">
+            <div class="switch-item">
+                <span class="switch-name" id="label-relay1">THIẾT BỊ 1: OFF</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="switch-relay1">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-item">
+                <span class="switch-name" id="label-relay2">THIẾT BỊ 2: OFF</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="switch-relay2">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <input type="date" id="date-picker">
+        <button class="btn-excel" id="btn-download">📄 XUẤT EXCEL THEO NGÀY</button>
+    </div>
+
+    <div class="tip">💡 Mẹo biểu đồ: Cuộn chuột để phóng to/thu nhỏ • Giữ chuột trái kéo rê để lướt xem giờ</div>
+
+    <div class="chart-container">
+        <canvas id="tempChart" style="width: 100%; height: 180px;"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="humChart" style="width: 100%; height: 180px;"></canvas>
+    </div>
+
+    <div class="status" id="status-text"><span class="dot" id="status-dot"></span> Đang đồng bộ dữ liệu...</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQwoGM-JWiYh27MRwt5IOgedL5QTj-AmM",
+    authDomain: "cam-bien-nhiet-do-do-am-d20f3.firebaseapp.com",
+    databaseURL: "https://cam-bien-nhiet-do-do-am-d20f3-default-rtdb.firebaseio.com",
+    projectId: "cam-bien-nhiet-do-do-am-d20f3",
+    storageBucket: "cam-bien-nhiet-do-do-am-d20f3.firebasestorage.app",
+    messagingSenderId: "402771140010",
+    appId: "1:402771140010:web:be468a061ccec26a299fd3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  const tempElement = document.getElementById('txt-temp');
+  const humElement = document.getElementById('txt-hum');
+  const datePicker = document.getElementById('date-picker');
+  
+  const switchRelay1 = document.getElementById('switch-relay1');
+  const switchRelay2 = document.getElementById('switch-relay2');
+  const labelRelay1 = document.getElementById('label-relay1');
+  const labelRelay2 = document.getElementById('label-relay2');
+  const statusText = document.getElementById('status-text');
+  const statusDot = document.getElementById('status-dot');
+
+  let statusRelay1 = 0;
+  let statusRelay2 = 0;
+  let excelRawData = []; 
+  
+  // Biến quản lý thời gian thực nhận tín hiệu từ ESP32
+  let lastDeviceUpdateTime = 0; 
+  let latestTemp = "No Signal";
+  let latestHum = "No Signal";
+
+  const localDate = new Date();
+  const todayStr = localDate.getFullYear() + '-' + String(localDate.getMonth() + 1).padStart(2, '0') + '-' + String(localDate.getDate()).padStart(2, '0');
+  datePicker.value = todayStr;
+  datePicker.max = todayStr;
+
+  const optionsCommon = (color, titleText) => ({
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+          x: { grid: { color: '#2d2d2d' }, ticks: { color: '#aaa', maxTicksLimit: 10 } },
+          y: { grid: { color: '#2d2d2d' }, ticks: { color: color }, title: { display: true, text: titleText, color: color } }
+      },
+      plugins: { 
+          legend: { labels: { color: '#fff' } },
+          zoom: {
+              pan: { enabled: true, mode: 'x' },
+              zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+          }
+      }
+  });
+
+  const tempChart = new Chart(document.getElementById('tempChart').getContext('2d'), {
+      type: 'line', data: { labels: [], datasets: [{ label: 'Lịch sử Nhiệt Độ (°C)', data: [], borderColor: '#ff5722', backgroundColor: 'rgba(255, 87, 34, 0.1)', borderWidth: 2, tension: 0.3 }] },
+      options: optionsCommon('#ff5722', 'Nhiệt Độ (°C)')
+  });
+
+  const humChart = new Chart(document.getElementById('humChart').getContext('2d'), {
+      type: 'line', data: { labels: [], datasets: [{ label: 'Lịch sử Độ Ẩm (%)', data: [], borderColor: '#00bcd4', backgroundColor: 'rgba(0, 188, 212, 0.1)', borderWidth: 2, tension: 0.3 }] },
+      options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
+  });
+
+  function unlockSystem() {
+      document.getElementById('login-overlay').style.opacity = '0';
+      setTimeout(() => {
+          document.getElementById('login-overlay').style.display = 'none';
+          document.getElementById('main-container').style.display = 'block';
+          startFirebaseSync();
+      }, 400);
+  }
+
+  function startFirebaseSync() {
+      // 1. ĐỒNG BỘ NÚT GẠT TỪ FIREBASE VỀ WEB
+      onValue(ref(db, 'DieuKhien'), (snapshot) => {
+          const data = snapshot.val();
+          if(data) {
+              statusRelay1 = data.ThietBi1 !== undefined ? data.ThietBi1 : 0;
+              statusRelay2 = data.ThietBi2 !== undefined ? data.ThietBi2 : 0;
+              
+              if(statusRelay1 === 1) {
+                  switchRelay1.checked = true;
+                  labelRelay1.innerText = "THIẾT BỊ 1: ON";
+                  labelRelay1.style.color = "#4caf50";
+              } else {
+                  switchRelay1.checked = false;
+                  labelRelay1.innerText = "THIẾT BỊ 1: OFF";
+                  labelRelay1.style.color = "#ccc";
+              }
+
+              if(statusRelay2 === 1) {
+                  switchRelay2.checked = true;
+                  labelRelay2.innerText = "THIẾT BỊ 2: ON";
+                  labelRelay2.style.color = "#4caf50";
+              } else {
+                  switchRelay2.checked = false;
+                  labelRelay2.innerText = "THIẾT BỊ 2: OFF";
+                  labelRelay2.style.color = "#ccc";
+              }
+          }
+      });
+
+      // 2. LẮNG NGHE GIÁ TRỊ TỨC THỜI TỪ FIREBASE
+      onValue(ref(db, 'HienTai'), (snapshot) => {
+          const data = snapshot.val();
+          if(data) {
+              latestTemp = (data.NhietDo !== undefined && data.NhietDo !== null) ? data.NhietDo + "°C" : "No Signal";
+              latestHum = (data.DoAm !== undefined && data.DoAm !== null) ? data.DoAm + "%" : "No Signal";
+              
+              // Cập nhật mốc thời gian (nhịp tim) nhận từ máy chủ Firebase
+              if(data.LastUpdate) {
+                  lastDeviceUpdateTime = Number(data.LastUpdate);
+              }
+          } else {
+              latestTemp = "No Signal";
+              latestHum = "No Signal";
+          }
+      });
+
+      // 3. VÒNG LẶP KIỂM TRA ĐỘ TRỄ TIMEOUT (Chạy mỗi 2 giây)
+      // Nếu quá 15 giây không thấy ESP32 cập nhật nhịp tim -> Ép hiển thị No Signal lập tức
+      setInterval(() => {
+          const currentTimeStamp = Date.now(); 
+          const timeDiff = (currentTimeStamp - lastDeviceUpdateTime) / 1000; 
+
+          if (lastDeviceUpdateTime === 0 || timeDiff > 15) { 
+              // ESP32 bị mất điện, ngắt mạng Wifi hoặc cảm biến lỗi không gửi dữ liệu
+              tempElement.innerText = "No Signal";
+              humElement.innerText = "No Signal";
+              statusText.style.color = "#ff5722";
+              statusDot.style.backgroundColor = "#ff5722";
+              statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ Mất kết nối với thiết bị ESP32 (No Signal)`;
+          } else {
+              // Thiết bị đang hoạt động trực tuyến bình thường
+              tempElement.innerText = latestTemp;
+              humElement.innerText = latestHum;
+              statusText.style.color = "#4caf50";
+              statusDot.style.backgroundColor = "#4caf50";
+              const parts = datePicker.value.split('-');
+              statusText.innerHTML = `<span class="dot" id="status-dot"></span> Đã đồng bộ thành công dữ liệu ngày ${parts[2]}/${parts[1]}/${parts[0]}!`;
+          }
+      }, 2000);
+
+      loadDataByDate(datePicker.value);
+      datePicker.addEventListener('change', (e) => {
+          loadDataByDate(e.target.value);
+      });
+
+      // BẮT SỰ KIỆN GẠT CÔNG TẮC ĐỂ ĐẨY TRẠNG THÁI MỚI LÊN FIREBASE
+      switchRelay1.addEventListener('change', (e) => {
+          const nextState = e.target.checked ? 1 : 0;
+          set(ref(db, 'DieuKhien/ThietBi1'), nextState);
+      });
+
+      switchRelay2.addEventListener('change', (e) => {
+          const nextState = e.target.checked ? 1 : 0;
+          set(ref(db, 'DieuKhien/ThietBi2'), nextState);
+      });
+  }
+
+  function loadDataByDate(htmlTargetDate) {
+      const parts = htmlTargetDate.split('-');
+      const formattedTargetDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+      onValue(ref(db, 'LichSu'), (snapshot) => {
+          tempChart.data.labels = []; tempChart.data.datasets[0].data = [];
+          humChart.data.labels = []; humChart.data.datasets[0].data = [];
+          excelRawData = []; 
+
+          const oldErr = document.getElementById('err-notif');
+          if(oldErr) oldErr.remove();
+
+          if (snapshot.exists()) {
+              const data = snapshot.val();
+              let count = 1;
+
+              Object.keys(data).forEach((key) => {
+                  const item = data[key];
+                  if(item.NhietDo !== undefined && item.DoAm !== undefined) {
+                      let recordDateTime = null;
+                      if (item.ThoiGian) {
+                          recordDateTime = new Date(item.ThoiGian);
+                      } else {
+                          try { recordDateTime = decodeFirebaseIdTimestamp(key); } catch(e) { recordDateTime = new Date(); }
+                      }
+
+                      if(!recordDateTime || isNaN(recordDateTime.getTime())) return;
+
+                      const recordDateStr = String(recordDateTime.getDate()).padStart(2, '0') + '/' + String(recordDateTime.getMonth() + 1).padStart(2, '0') + '/' + recordDateTime.getFullYear();
+                      
+                      if (recordDateStr === formattedTargetDate) {
+                          const timeLabel = String(recordDateTime.getHours()).padStart(2, '0') + ':' + String(recordDateTime.getMinutes()).padStart(2, '0');
+                          const excelTime = recordDateStr + " " + timeLabel;
+
+                          tempChart.data.labels.push(timeLabel);
+                          tempChart.data.datasets[0].data.push(Number(item.NhietDo));
+
+                          humChart.data.labels.push(timeLabel);
+                          humChart.data.datasets[0].data.push(Number(item.DoAm));
+
+                          excelRawData.push({
+                              "STT": count++,
+                              "Thời Gian Ghi Nhận": excelTime,
+                              "Nhiệt Độ (°C)": Number(item.NhietDo),
+                              "Độ Ẩm (%)": Number(item.DoAm)
+                          });
+                      }
+                  }
+              });
+          }
+
+          if(excelRawData.length === 0) {
+              const container = document.getElementById('main-container');
+              const errDiv = document.createElement('div');
+              errDiv.id = 'err-notif';
+              errDiv.style.color = '#ff5722'; errDiv.style.fontSize = '13px'; errDiv.style.marginTop = '15px';
+              errDiv.innerText = `⚠️ Ngày ${formattedTargetDate} không tìm thấy dữ liệu lịch sử!`;
+              container.appendChild(errDiv);
+          }
+
+          tempChart.resetZoom(); humChart.resetZoom();
+          tempChart.update(); humChart.update();
+      });
+  }
+
+  function decodeFirebaseIdTimestamp(id) {
+      const PUSH_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+      let time = 0; let data = id.substring(1, 9);
+      for (let i = 0; i < data.length; i++) {
+          let c = data.charAt(i); time = (time * 64) + PUSH_CHARS.indexOf(c);
+      }
+      return new Date(time);
+  }
+
+  document.getElementById('btn-download').addEventListener('click', () => {
+      if(excelRawData.length === 0) {
+          alert(`Hệ thống chưa có dữ liệu lịch sử của ngày này để xuất file Excel!`); return;
+      }
+      const worksheet = XLSX.utils.json_to_sheet(excelRawData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, `DuLieu_GhiNhan`);
+      const parts = datePicker.value.split('-');
+      XLSX.writeFile(workbook, `BaoCao_Ngay_${parts[2]}_${parts[1]}_${parts[0]}.xlsx`);
+  });
+
+  document.getElementById('btn-login').addEventListener('click', () => {
+      const emailVal = document.getElementById('username').value.trim();
+      const passVal = document.getElementById('password').value.trim();
+
+      if(!emailVal || !passVal) {
+          alert("Vui lòng nhập đầy đủ Email và Mật khẩu!"); return;
+      }
+
+      signInWithEmailAndPassword(auth, emailVal, passVal)
+          .then(() => unlockSystem())
+          .catch((error) => {
+              console.error("Lỗi Auth:", error.message);
+              document.getElementById('error-msg').style.display = 'block';
+          });
+  });
+
+  document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') document.getElementById('btn-login').click();
+  });
+</script>
+
+</body>
+</html>
