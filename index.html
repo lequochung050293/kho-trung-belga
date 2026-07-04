@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống IoT - Điều Khiển & Xuất Excel</title>
+    <title>Hệ Thống IoT - Điều Khiển & Ngưỡng Cảnh Báo</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -65,15 +66,26 @@
         .temp .value { color: #ff5722; }
         .hum .value { color: #00bcd4; }
         
-        /* --- NÚT GẠT CÔNG TẮC (TỐI ƯU CHO ĐIỆN THOẠI) --- */
-        .control-devices {
+        /* Style cho khung trạng thái mới */
+        #alert-display { 
+            margin: 0 0 15px 0; padding: 12px; border-radius: 12px; 
+            background: #252525; text-align: center; font-weight: bold; 
+            border: 1px solid #333; color: #fff;
+        }
+
+        /* --- KHỐI ĐIỀU KHIỂN & CÀI ĐẶT --- */
+        .control-block {
             background: #252525; padding: 15px; border-radius: 12px;
             margin-bottom: 20px; border: 1px solid #2d2d2d;
-            display: flex; flex-direction: column; gap: 15px; text-align: left;
+            text-align: left;
         }
-        .control-devices label.title-label { font-size: 12px; color: #aaa; text-transform: uppercase; font-weight: bold;}
+        .control-block label.title-label { font-size: 12px; color: #aaa; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 10px;}
         
-        .switch-group { display: flex; justify-content: space-between; gap: 20px; }
+       .switch-group { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; 
+}
         .switch-item {
             flex: 1; background: #1e1e1e; padding: 12px 15px; border-radius: 8px;
             display: flex; align-items: center; justify-content: space-between;
@@ -83,22 +95,38 @@
         
         .toggle-switch {
             position: relative; display: inline-block; width: 60px; height: 32px;
-            -webkit-tap-highlight-color: transparent; user-select: none;
         }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
             background-color: #444; border-radius: 34px; transition: all 0.2s ease-in-out;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
         }
         .slider:before {
             position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px;
             background-color: #fff; border-radius: 50%; transition: all 0.2s ease-in-out;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
-        .toggle-switch input:checked + .slider { background-color: #2e7d32; box-shadow: 0 0 12px rgba(76, 175, 80, 0.6); }
+        .toggle-switch input:checked + .slider { background-color: #2e7d32; }
         .toggle-switch input:checked + .slider:before { transform: translateX(28px); }
         
+        .config-inputs { display: flex; gap: 10px; }
+        .config-group { flex: 1; }
+        .config-group label { display: block; font-size: 11px; margin-bottom: 5px; }
+        .config-group.temp label { color: #ff5722; }
+        .config-group.hum label { color: #00bcd4; }
+        .input-pair { display: flex; gap: 5px; }
+        .input-pair input {
+            width: 100%; background: #1e1e1e; color: white; border: 1px solid #333;
+            padding: 8px; border-radius: 6px; font-size: 13px; outline: none;
+        }
+        .input-pair input:focus { border-color: #00adb5; }
+
+        .btn-action {
+            width: 100%; border: none; padding: 10px; 
+            font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;
+        }
+        .btn-save-config { background: #2196f3; color: white; margin-top: 15px; }
+        .btn-excel { background: #4caf50; color: white; flex: none; width: auto;}
+
         .control-panel {
             background: #252525; padding: 15px; border-radius: 12px;
             margin-bottom: 20px; border: 1px solid #2d2d2d;
@@ -108,15 +136,8 @@
             background: #1e1e1e; color: white; border: 1px solid #333;
             padding: 10px; border-radius: 6px; font-size: 14px; outline: none; flex: 1;
         }
-        .btn-excel {
-            background: #4caf50; color: white; border: none; padding: 10px 18px; 
-            font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s;
-        }
-        .btn-excel:hover { background: #43a047; }
-        .chart-container { background: #252525; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2d2d2d; cursor: grab; }
-        .chart-container:active { cursor: grabbing; }
         
-        /* Đèn trạng thái đồng bộ hệ thống */
+        .chart-container { background: #252525; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2d2d2d; }
         .status { font-size: 12px; color: #4caf50; display: flex; justify-content: center; align-items: center; gap: 5px; }
         .dot { width: 8px; height: 8px; background-color: #4caf50; border-radius: 50%; animation: blink 1.5s infinite; }
         @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
@@ -154,29 +175,158 @@
         </div>
     </div>
 
-    <div class="control-devices">
+    <div id="alert-display">Đang kiểm tra trạng thái...</div>
+
+    <div class="control-block">
         <label class="title-label">Bảng Điều Khiển Thiết Bị (Chân IO ESP32)</label>
-        <div class="switch-group">
-            <div class="switch-item">
-                <span class="switch-name" id="label-relay1">THIẾT BỊ 1: OFF</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="switch-relay1">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="switch-item">
-                <span class="switch-name" id="label-relay2">THIẾT BỊ 2: OFF</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="switch-relay2">
-                    <span class="slider"></span>
-                </label>
-            </div>
+   <div class="switch-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+    
+   <!-- Thiết bị 1 -->
+<!-- Cấu trúc cho 1 thiết bị (Lặp lại cho 4 thiết bị) -->
+<div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+    <input type="text" id="name-relay1" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    
+    <select id="mode-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm">Theo Độ Ẩm</option>
+    </select>
+
+    <!-- Khu vực nhập liệu với nhãn hiển thị cố định -->
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
         </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+
+    <button class="btn-action" id="btn-save-relay1" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 1</button>
+    
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay1">TB 1: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay1"><span class="slider"></span></label>
+    </div>
+</div>
+<!-- Thiết bị 2 -->
+<div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+    <input type="text" id="name-relay2" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    
+    <select id="mode-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm">Theo Độ Ẩm</option>
+    </select>
+
+    <!-- Khu vực nhập liệu với nhãn hiển thị cố định -->
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+
+    <button class="btn-action" id="btn-save-relay2" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 2</button>
+    
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay2">TB 2: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay2"><span class="slider"></span></label>
+    </div>
+</div>
+
+    <!-- Thiết bị 3 -->
+<div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+    <input type="text" id="name-relay3" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    
+    <select id="mode-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm">Theo Độ Ẩm</option>
+    </select>
+
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+
+    <button class="btn-action" id="btn-save-relay3" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 3</button>
+    
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay3">TB 3: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay3"><span class="slider"></span></label>
+    </div>
+</div>
+
+   <!-- Thiết bị 4 -->
+<div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+    <input type="text" id="name-relay4" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    
+    <select id="mode-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm">Theo Độ Ẩm</option>
+    </select>
+
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+
+    <button class="btn-action" id="btn-save-relay4" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 4</button>
+    
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay4">TB 4: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay4"><span class="slider"></span></label>
+    </div>
+</div>
+</div>
+
+   <div class="control-block">
+        <label class="title-label">Thiết lập ngưỡng cảnh báo (Min/Max)</label>
+        <!-- Tìm đoạn Thiết lập ngưỡng cảnh báo (Min/Max) và thay thế bằng đoạn này -->
+<div class="config-inputs">
+    <div class="config-group temp">
+        <label>Nhiệt độ (°C)</label>
+        <div class="input-pair">
+            <input type="number" id="min-temp" placeholder="Min" step="0.1" disabled>
+            <input type="number" id="max-temp" placeholder="Max" step="0.1" disabled>
+        </div>
+    </div>
+    <div class="config-group hum">
+        <label>Độ ẩm (%)</label>
+        <div class="input-pair">
+            <input type="number" id="min-hum" placeholder="Min" step="1" disabled>
+            <input type="number" id="max-hum" placeholder="Max" step="1" disabled>
+        </div>
+    </div>
+</div>
+        <button class="btn-action" id="btn-toggle-lock" style="background: #555; color: white; margin-bottom: 5px;">🔓 MỞ KHÓA CHỈNH SỬA</button>
+        <button class="btn-action btn-save-config" id="btn-save-config" style="background: #2196f3; color: white; margin-top: 15px;">LƯU CẤU HÌNH CẢNH BÁO</button>
+
     </div>
 
     <div class="control-panel">
         <input type="date" id="date-picker">
-        <button class="btn-excel" id="btn-download">📄 XUẤT EXCEL THEO NGÀY</button>
+        <button class="btn-action btn-excel" id="btn-download">📄 XUẤT EXCEL</button>
     </div>
 
     <div class="tip">💡 Mẹo biểu đồ: Cuộn chuột để phóng to/thu nhỏ • Giữ chuột trái kéo rê để lướt xem giờ</div>
@@ -218,14 +368,24 @@
   const switchRelay2 = document.getElementById('switch-relay2');
   const labelRelay1 = document.getElementById('label-relay1');
   const labelRelay2 = document.getElementById('label-relay2');
+  const switchRelay3 = document.getElementById('switch-relay3');
+  const switchRelay4 = document.getElementById('switch-relay4');
+  const labelRelay3 = document.getElementById('label-relay3');
+  const labelRelay4 = document.getElementById('label-relay4');
   const statusText = document.getElementById('status-text');
   const statusDot = document.getElementById('status-dot');
+
+  const minTempInput = document.getElementById('min-temp');
+  const maxTempInput = document.getElementById('max-temp');
+  const minHumInput = document.getElementById('min-hum');
+  const maxHumInput = document.getElementById('max-hum');
+  const btnSaveConfig = document.getElementById('btn-save-config');
+  const alertDisplay = document.getElementById('alert-display'); // Khai báo phần tử mới
 
   let statusRelay1 = 0;
   let statusRelay2 = 0;
   let excelRawData = []; 
   
-  // Biến quản lý thời gian thực nhận tín hiệu từ ESP32
   let lastDeviceUpdateTime = 0; 
   let latestTemp = "No Signal";
   let latestHum = "No Signal";
@@ -268,93 +428,220 @@
           startFirebaseSync();
       }, 400);
   }
+function saveDeviceConfig(i) {
+    // 1. Lấy dữ liệu từ giao diện
 
-  function startFirebaseSync() {
-      // 1. ĐỒNG BỘ NÚT GẠT TỪ FIREBASE VỀ WEB
-      onValue(ref(db, 'DieuKhien'), (snapshot) => {
+    const name = document.getElementById(`name-relay${i}`).value;
+    const mode = document.getElementById(`mode-relay${i}`).value;
+    const start = document.getElementById(`start-relay${i}`).value;
+    const stop = document.getElementById(`stop-relay${i}`).value;
+
+    // 2. Lưu cấu hình chung
+    set(ref(db, `DieuKhien/ThietBi${i}_Config`), {
+        Name: name,
+        Mode: mode,
+        Start: start,
+        Stop: stop
+    });
+
+    // 3. Logic ép trạng thái IO:
+    // CHỈ ép về 0 (Tắt) khi đang lưu ở chế độ THỦ CÔNG
+    if (mode === "Manual") {
+        set(ref(db, `DieuKhien/ThietBi${i}`), 0); 
+        alert(`Đã lưu cấu hình. Thiết bị ${i} đã được đưa về trạng thái TẮT (Thủ công).`);
+    } else {
+        // Ở chế độ Tự động (Nhiệt độ/Độ ẩm), KHÔNG làm gì cả.
+        // ESP32 sẽ tự cập nhật chế độ mới và tự vận hành theo cảm biến ngay lập tức.
+        alert(`Đã lưu cấu hình. Thiết bị ${i} sẽ tự vận hành theo chế độ ${mode}.`);
+    }
+}
+function startFirebaseSync() {
+  
+   
+      // Thay thế phần mục 2 cũ bằng đoạn này:
+// 2. Lắng nghe Relay và Cấu hình
+for (let i = 1; i <= 4; i++) {
+    onValue(ref(db, `DieuKhien/ThietBi${i}_Config`), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById(`name-relay${i}`).value = data.Name || "";
+            document.getElementById(`mode-relay${i}`).value = data.Mode || "Manual";
+            document.getElementById(`start-relay${i}`).value = data.Start || "";
+            document.getElementById(`stop-relay${i}`).value = data.Stop || "";
+        }
+    });
+    
+    // Đảm bảo nút này gọi đúng hàm saveDeviceConfig
+    document.getElementById(`btn-save-relay${i}`).addEventListener('click', () => saveDeviceConfig(i));
+}
+      
+      console.log("Đã kết nối Firebase!");
+  
+
+          // 3. Lắng nghe trạng thái Relay và Tên thiết bị
+onValue(ref(db, 'DieuKhien'), (snapshot) => {
+    const data = snapshot.val();
+    if(data) {
+        for(let i = 1; i <= 4; i++) {
+            const status = data[`ThietBi${i}`] ?? 0;
+            const config = data[`ThietBi${i}_Config`];
+            
+            const switchEl = document.getElementById(`switch-relay${i}`);
+            const labelEl = document.getElementById(`label-relay${i}`);
+            const deviceName = config ? config.Name : `TB ${i}`;
+            const currentMode = config ? config.Mode : "Manual"; // Lấy mode hiện tại
+            
+            // Cập nhật nhãn và trạng thái switch
+            labelEl.innerText = `${deviceName || 'TB ' + i}: ${status === 1 ? "ON" : "OFF"}`;
+            labelEl.style.color = status === 1 ? "#4caf50" : "#ccc";
+            switchEl.checked = (status === 1);
+            
+            // --- LOGIC MỚI: Khóa nút nếu không phải Manual ---
+            if (currentMode === "Manual") {
+                switchEl.disabled = false;     // Cho phép bấm
+                switchEl.style.cursor = "pointer";
+                switchEl.parentElement.style.opacity = "1";
+            } else {
+                switchEl.disabled = true;      // Khóa nút
+                switchEl.style.cursor = "not-allowed";
+                switchEl.parentElement.style.opacity = "0.5"; // Làm mờ nút
+            }
+        }
+    }
+});
+
+      // 4. Lắng nghe cấu hình ngưỡng & cảm biến (giữ nguyên logic cũ của bạn)
+      onValue(ref(db, 'CauHinh'), (snapshot) => {
           const data = snapshot.val();
           if(data) {
-              statusRelay1 = data.ThietBi1 !== undefined ? data.ThietBi1 : 0;
-              statusRelay2 = data.ThietBi2 !== undefined ? data.ThietBi2 : 0;
-              
-              if(statusRelay1 === 1) {
-                  switchRelay1.checked = true;
-                  labelRelay1.innerText = "THIẾT BỊ 1: ON";
-                  labelRelay1.style.color = "#4caf50";
-              } else {
-                  switchRelay1.checked = false;
-                  labelRelay1.innerText = "THIẾT BỊ 1: OFF";
-                  labelRelay1.style.color = "#ccc";
-              }
-
-              if(statusRelay2 === 1) {
-                  switchRelay2.checked = true;
-                  labelRelay2.innerText = "THIẾT BỊ 2: ON";
-                  labelRelay2.style.color = "#4caf50";
-              } else {
-                  switchRelay2.checked = false;
-                  labelRelay2.innerText = "THIẾT BỊ 2: OFF";
-                  labelRelay2.style.color = "#ccc";
-              }
+              minTempInput.value = data.MinTemp ?? "";
+              maxTempInput.value = data.MaxTemp ?? "";
+              minHumInput.value = data.MinHum ?? "";
+              maxHumInput.value = data.MaxHum ?? "";
           }
       });
 
-      // 2. LẮNG NGHE GIÁ TRỊ TỨC THỜI TỪ FIREBASE
       onValue(ref(db, 'HienTai'), (snapshot) => {
           const data = snapshot.val();
           if(data) {
-              latestTemp = (data.NhietDo !== undefined && data.NhietDo !== null) ? data.NhietDo + "°C" : "No Signal";
-              latestHum = (data.DoAm !== undefined && data.DoAm !== null) ? data.DoAm + "%" : "No Signal";
+              latestTemp = data.NhietDo ?? "No Signal";
+              latestHum = data.DoAm ?? "No Signal";
+              lastDeviceUpdateTime = Number(data.LastUpdate) || 0;
+          }
+      });
+
+     
+   // Thay thế toàn bộ setInterval hiện tại bằng đoạn này:
+// Biến toàn cục
+let latestTemp = "ERR"; 
+let latestHum = "ERR";
+let lastDeviceUpdateTime = 0; // Lưu thời điểm nhận dữ liệu cuối cùng
+
+// 1. Chỉ dùng onValue để hứng dữ liệu vào biến
+onValue(ref(db, 'HienTai'), (snapshot) => {
+    const data = snapshot.val();
+    if(data) {
+        latestTemp = data.NhietDo ?? "ERR";
+        latestHum = data.DoAm ?? "ERR";
+        lastDeviceUpdateTime = Date.now(); // Cập nhật mốc thời gian hiện tại
+    }
+});
+
+// 2. Dùng setInterval để "trình diễn" lên màn hình mỗi 2 giây
+setInterval(() => {
+    const txtTemp = document.getElementById('txt-temp');
+    const txtHum = document.getElementById('txt-hum');
+    const alertDisplay = document.getElementById('alert-display');
+    const statusText = document.getElementById('status-text');
+
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastDeviceUpdateTime;
+
+    // --- KIỂM TRA MẤT KẾT NỐI (Nếu quá 15 giây không có dữ liệu mới) ---
+    if (lastDeviceUpdateTime === 0 || timeSinceLastUpdate > 15000) {
+        txtTemp.innerText = "-";
+        txtHum.innerText = "-";
+        statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ MẤT KẾT NỐI ESP32!`;
+        alertDisplay.innerText = "⚠️ ESP32 ĐANG NGOẠI TUYẾN (OFFLINE)!";
+        alertDisplay.style.color = "#ff5722";
+        return; // Dừng lại, không chạy tiếp các dòng dưới
+    }
+
+    // --- KIỂM TRA LỖI CẢM BIẾN ---
+    if (latestTemp === "ERR" || latestTemp === "No Signal") {
+        txtTemp.innerText = "LỖI";
+        txtHum.innerText = "LỖI";
+        statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ Lỗi cảm biến!`;
+        alertDisplay.innerText = "⚠️ CẢM BIẾN KHÔNG ĐỌC ĐƯỢC DỮ LIỆU!";
+        alertDisplay.style.color = "#ff5722";
+    } else {
+        // --- HIỂN THỊ BÌNH THƯỜNG ---
+       document.getElementById('txt-temp').innerText = latestTemp + "°C";
+        document.getElementById('txt-hum').innerText = latestHum + "%";
+        
+        statusText.innerHTML = `<span class="dot" id="status-dot"></span> Đã đồng bộ thành công!`;
+        
+        const valT = parseFloat(latestTemp), valH = parseFloat(latestHum);
+        const minT = parseFloat(minTempInput.value) || 0, maxT = parseFloat(maxTempInput.value) || 100;
+        const minH = parseFloat(minHumInput.value) || 0, maxH = parseFloat(maxHumInput.value) || 100;
+
+        let msgT = (valT > maxT) ? "Nhiệt độ CAO" : ((valT < minT) ? "Nhiệt độ THẤP" : "Nhiệt độ BÌNH THƯỜNG");
+        let msgH = (valH > maxH) ? "Độ ẩm CAO" : ((valH < minH) ? "Độ ẩm THẤP" : "Độ ẩm BÌNH THƯỜNG");
+        
+        alertDisplay.innerText = msgT + " | " + msgH;
+        alertDisplay.style.color = (msgT.includes("BÌNH THƯỜNG") && msgH.includes("BÌNH THƯỜNG")) ? "#4caf50" : "#ff5722";
+    }
+}, 2000);
+
+// Các sự kiện nút nhấn: Vừa bật/tắt Relay vừa ép sang chế độ Manual
+      for(let i = 1; i <= 4; i++) {
+          document.getElementById(`switch-relay${i}`).addEventListener('change', (e) => {
+              const status = e.target.checked ? 1 : 0;
               
-              // Cập nhật mốc thời gian (nhịp tim) nhận từ máy chủ Firebase
-              if(data.LastUpdate) {
-                  lastDeviceUpdateTime = Number(data.LastUpdate);
-              }
-          } else {
-              latestTemp = "No Signal";
-              latestHum = "No Signal";
-          }
-      });
+              // Cập nhật trạng thái Relay
+              set(ref(db, `DieuKhien/ThietBi${i}`), status);
+              
+              // Ép chế độ sang Manual để tránh việc đang ở Tự động mà không điều khiển được
+              set(ref(db, `DieuKhien/ThietBi${i}_Config/Mode`), "Manual");
+              
+              console.log(`Thiết bị ${i} đã chuyển sang ${status} và chế độ Manual`);
+          });
+      }
 
-      // 3. VÒNG LẶP KIỂM TRA ĐỘ TRỄ TIMEOUT (Chạy mỗi 2 giây)
-      // Nếu quá 15 giây không thấy ESP32 cập nhật nhịp tim -> Ép hiển thị No Signal lập tức
-      setInterval(() => {
-          const currentTimeStamp = Date.now(); 
-          const timeDiff = (currentTimeStamp - lastDeviceUpdateTime) / 1000; 
+      // ... đặt đoạn này vào trong hàm startFirebaseSync() ...
 
-          if (lastDeviceUpdateTime === 0 || timeDiff > 15) { 
-              // ESP32 bị mất điện, ngắt mạng Wifi hoặc cảm biến lỗi không gửi dữ liệu
-              tempElement.innerText = "No Signal";
-              humElement.innerText = "No Signal";
-              statusText.style.color = "#ff5722";
-              statusDot.style.backgroundColor = "#ff5722";
-              statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ Mất kết nối với thiết bị ESP32 (No Signal)`;
-          } else {
-              // Thiết bị đang hoạt động trực tuyến bình thường
-              tempElement.innerText = latestTemp;
-              humElement.innerText = latestHum;
-              statusText.style.color = "#4caf50";
-              statusDot.style.backgroundColor = "#4caf50";
-              const parts = datePicker.value.split('-');
-              statusText.innerHTML = `<span class="dot" id="status-dot"></span> Đã đồng bộ thành công dữ liệu ngày ${parts[2]}/${parts[1]}/${parts[0]}!`;
-          }
-      }, 2000);
+const btnToggleLock = document.getElementById('btn-toggle-lock');
+let isLocked = true; // Mặc định là bị khóa
 
+btnToggleLock.addEventListener('click', () => {
+    isLocked = !isLocked;
+    [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => {
+        el.disabled = isLocked;
+    });
+    btnToggleLock.innerText = isLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
+    btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
+});
+
+// Cập nhật lại sự kiện nhấn nút Lưu cấu hình
+btnSaveConfig.addEventListener('click', () => {
+    set(ref(db, 'CauHinh'), {
+        MinTemp: parseFloat(minTempInput.value) || 0,
+        MaxTemp: parseFloat(maxTempInput.value) || 0,
+        MinHum: parseInt(minHumInput.value) || 0,
+        MaxHum: parseInt(maxHumInput.value) || 0
+    }).then(() => {
+        alert("✅ Đã lưu cấu hình!");
+        // Sau khi lưu xong thì TỰ ĐỘNG KHÓA LẠI
+        isLocked = true;
+        [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => el.disabled = true);
+        btnToggleLock.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
+        btnToggleLock.style.background = "#555";
+    }).catch(e => alert("Lỗi: " + e.message));
+});
+
+      // Lịch sử & Excel
       loadDataByDate(datePicker.value);
-      datePicker.addEventListener('change', (e) => {
-          loadDataByDate(e.target.value);
-      });
-
-      // BẮT SỰ KIỆN GẠT CÔNG TẮC ĐỂ ĐẨY TRẠNG THÁI MỚI LÊN FIREBASE
-      switchRelay1.addEventListener('change', (e) => {
-          const nextState = e.target.checked ? 1 : 0;
-          set(ref(db, 'DieuKhien/ThietBi1'), nextState);
-      });
-
-      switchRelay2.addEventListener('change', (e) => {
-          const nextState = e.target.checked ? 1 : 0;
-          set(ref(db, 'DieuKhien/ThietBi2'), nextState);
-      });
+      datePicker.addEventListener('change', (e) => loadDataByDate(e.target.value));
   }
 
   function loadDataByDate(htmlTargetDate) {
@@ -366,58 +653,26 @@
           humChart.data.labels = []; humChart.data.datasets[0].data = [];
           excelRawData = []; 
 
-          const oldErr = document.getElementById('err-notif');
-          if(oldErr) oldErr.remove();
-
           if (snapshot.exists()) {
               const data = snapshot.val();
               let count = 1;
-
               Object.keys(data).forEach((key) => {
                   const item = data[key];
                   if(item.NhietDo !== undefined && item.DoAm !== undefined) {
-                      let recordDateTime = null;
-                      if (item.ThoiGian) {
-                          recordDateTime = new Date(item.ThoiGian);
-                      } else {
-                          try { recordDateTime = decodeFirebaseIdTimestamp(key); } catch(e) { recordDateTime = new Date(); }
-                      }
-
-                      if(!recordDateTime || isNaN(recordDateTime.getTime())) return;
-
+                      let recordDateTime = item.ThoiGian ? new Date(item.ThoiGian) : decodeFirebaseIdTimestamp(key);
                       const recordDateStr = String(recordDateTime.getDate()).padStart(2, '0') + '/' + String(recordDateTime.getMonth() + 1).padStart(2, '0') + '/' + recordDateTime.getFullYear();
                       
                       if (recordDateStr === formattedTargetDate) {
                           const timeLabel = String(recordDateTime.getHours()).padStart(2, '0') + ':' + String(recordDateTime.getMinutes()).padStart(2, '0');
-                          const excelTime = recordDateStr + " " + timeLabel;
-
                           tempChart.data.labels.push(timeLabel);
                           tempChart.data.datasets[0].data.push(Number(item.NhietDo));
-
                           humChart.data.labels.push(timeLabel);
                           humChart.data.datasets[0].data.push(Number(item.DoAm));
-
-                          excelRawData.push({
-                              "STT": count++,
-                              "Thời Gian Ghi Nhận": excelTime,
-                              "Nhiệt Độ (°C)": Number(item.NhietDo),
-                              "Độ Ẩm (%)": Number(item.DoAm)
-                          });
+                          excelRawData.push({"STT": count++, "Thời Gian": recordDateStr + " " + timeLabel, "Nhiệt Độ (°C)": Number(item.NhietDo), "Độ Ẩm (%)": Number(item.DoAm)});
                       }
                   }
               });
           }
-
-          if(excelRawData.length === 0) {
-              const container = document.getElementById('main-container');
-              const errDiv = document.createElement('div');
-              errDiv.id = 'err-notif';
-              errDiv.style.color = '#ff5722'; errDiv.style.fontSize = '13px'; errDiv.style.marginTop = '15px';
-              errDiv.innerText = `⚠️ Ngày ${formattedTargetDate} không tìm thấy dữ liệu lịch sử!`;
-              container.appendChild(errDiv);
-          }
-
-          tempChart.resetZoom(); humChart.resetZoom();
           tempChart.update(); humChart.update();
       });
   }
@@ -425,43 +680,27 @@
   function decodeFirebaseIdTimestamp(id) {
       const PUSH_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
       let time = 0; let data = id.substring(1, 9);
-      for (let i = 0; i < data.length; i++) {
-          let c = data.charAt(i); time = (time * 64) + PUSH_CHARS.indexOf(c);
-      }
+      for (let i = 0; i < data.length; i++) { time = (time * 64) + PUSH_CHARS.indexOf(data[i]); }
       return new Date(time);
   }
 
   document.getElementById('btn-download').addEventListener('click', () => {
-      if(excelRawData.length === 0) {
-          alert(`Hệ thống chưa có dữ liệu lịch sử của ngày này để xuất file Excel!`); return;
-      }
       const worksheet = XLSX.utils.json_to_sheet(excelRawData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, `DuLieu_GhiNhan`);
-      const parts = datePicker.value.split('-');
-      XLSX.writeFile(workbook, `BaoCao_Ngay_${parts[2]}_${parts[1]}_${parts[0]}.xlsx`);
+      XLSX.utils.book_append_sheet(workbook, worksheet, `DuLieu`);
+      XLSX.writeFile(workbook, `BaoCao.xlsx`);
   });
 
+  // Khởi động login
   document.getElementById('btn-login').addEventListener('click', () => {
-      const emailVal = document.getElementById('username').value.trim();
-      const passVal = document.getElementById('password').value.trim();
-
-      if(!emailVal || !passVal) {
-          alert("Vui lòng nhập đầy đủ Email và Mật khẩu!"); return;
-      }
-
-      signInWithEmailAndPassword(auth, emailVal, passVal)
-          .then(() => unlockSystem())
-          .catch((error) => {
-              console.error("Lỗi Auth:", error.message);
-              document.getElementById('error-msg').style.display = 'block';
-          });
-  });
-
-  document.getElementById('password').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') document.getElementById('btn-login').click();
+      signInWithEmailAndPassword(auth, document.getElementById('username').value, document.getElementById('password').value)
+          .then(() => {
+              document.getElementById('login-overlay').style.display = 'none';
+              document.getElementById('main-container').style.display = 'block';
+              startFirebaseSync();
+          })
+          .catch(() => document.getElementById('error-msg').style.display = 'block');
   });
 </script>
-
 </body>
-</html>
+</html> 
