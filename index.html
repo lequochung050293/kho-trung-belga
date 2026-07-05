@@ -384,8 +384,15 @@
 
   let statusRelay1 = 0;
   let statusRelay2 = 0;
-  let excelRawData = []; 
-  
+  let statusRelay3 = 0;
+  let statusRelay4 = 0;
+  let isLocked = true;
+  let excelRawData = [];
+   
+   // Thêm các biến này vào cùng khu vực với các biến relay
+  let configMinTemp = 0, configMaxTemp = 100;
+  let configMinHum = 0, configMaxHum = 100;
+    
   let lastDeviceUpdateTime = 0; 
   let latestTemp = "No Signal";
   let latestHum = "No Signal";
@@ -511,15 +518,22 @@ onValue(ref(db, 'DieuKhien'), (snapshot) => {
 });
 
       // 4. Lắng nghe cấu hình ngưỡng & cảm biến (giữ nguyên logic cũ của bạn)
-      onValue(ref(db, 'CauHinh'), (snapshot) => {
-          const data = snapshot.val();
-          if(data) {
-              minTempInput.value = data.MinTemp ?? "";
-              maxTempInput.value = data.MaxTemp ?? "";
-              minHumInput.value = data.MinHum ?? "";
-              maxHumInput.value = data.MaxHum ?? "";
-          }
-      });
+     onValue(ref(db, 'CauHinh'), (snapshot) => {
+    const data = snapshot.val();
+    if(data) {
+        // Cập nhật ô input (để người dùng thấy)
+        minTempInput.value = data.MinTemp ?? "";
+        maxTempInput.value = data.MaxTemp ?? "";
+        minHumInput.value = data.MinHum ?? "";
+        maxHumInput.value = data.MaxHum ?? "";
+        
+        // CẬP NHẬT VÀO BIẾN DÙNG ĐỂ SO SÁNH
+        configMinTemp = parseFloat(data.MinTemp) || 0;
+        configMaxTemp = parseFloat(data.MaxTemp) || 100;
+        configMinHum = parseFloat(data.MinHum) || 0;
+        configMaxHum = parseFloat(data.MaxHum) || 100;
+    }
+});
 
       onValue(ref(db, 'HienTai'), (snapshot) => {
           const data = snapshot.val();
@@ -531,11 +545,8 @@ onValue(ref(db, 'DieuKhien'), (snapshot) => {
       });
 
      
-   // Thay thế toàn bộ setInterval hiện tại bằng đoạn này:
-// Biến toàn cục
-let latestTemp = "ERR"; 
-let latestHum = "ERR";
-let lastDeviceUpdateTime = 0; // Lưu thời điểm nhận dữ liệu cuối cùng
+  
+
 
 // 1. Chỉ dùng onValue để hứng dữ liệu vào biến
 onValue(ref(db, 'HienTai'), (snapshot) => {
@@ -582,8 +593,11 @@ setInterval(() => {
         statusText.innerHTML = `<span class="dot" id="status-dot"></span> Đã đồng bộ thành công!`;
         
         const valT = parseFloat(latestTemp), valH = parseFloat(latestHum);
-        const minT = parseFloat(minTempInput.value) || 0, maxT = parseFloat(maxTempInput.value) || 100;
-        const minH = parseFloat(minHumInput.value) || 0, maxH = parseFloat(maxHumInput.value) || 100;
+        // THAY THẾ BẰNG:
+        const minT = configMinTemp;
+        const maxT = configMaxTemp;
+        const minH = configMinHum;
+        const maxH = configMaxHum;
 
         let msgT = (valT > maxT) ? "Nhiệt độ CAO" : ((valT < minT) ? "Nhiệt độ THẤP" : "Nhiệt độ BÌNH THƯỜNG");
         let msgH = (valH > maxH) ? "Độ ẩm CAO" : ((valH < minH) ? "Độ ẩm THẤP" : "Độ ẩm BÌNH THƯỜNG");
