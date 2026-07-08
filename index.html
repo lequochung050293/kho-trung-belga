@@ -165,7 +165,13 @@
 <div class="container" id="main-container">
     <h2>Hệ Thống Giám Sát Kho Trứng Bel Gà Tân Châu 2</h2>
     <p class="subtitle">Mặc định hiển thị ngày hôm nay - Chọn ngày để xem lịch sử cũ</p>
-
+<!-- Dán đoạn này thay thế đoạn cũ -->
+<div style="text-align: center; margin: 0 auto 20px auto; width: fit-content;">
+    <a href="https://t.me/Canhbaokhotrung" target="_blank" style="display: flex; align-items: center; justify-content: center; background: #0088cc; color: #ffffff !important; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram" style="width: 20px; height: 20px; margin-right: 10px; filter: brightness(0) invert(1);">
+        Tham gia nhóm Telegram
+    </a>
+</div>
     <div class="card-container">
         <div class="card temp">
             <div class="info"><label>Nhiệt Độ (Mới nhất)</label><div class="value"><span id="txt-temp">No Signal</span></div></div>
@@ -307,15 +313,27 @@
     <div class="config-group temp">
         <label>Nhiệt độ (°C)</label>
         <div class="input-pair">
-            <input type="number" id="min-temp" placeholder="Min" step="0.1" disabled>
-            <input type="number" id="max-temp" placeholder="Max" step="0.1" disabled>
+            <div style="flex:1;">
+                <input type="number" id="min-temp" placeholder="Min" step="0.1" disabled style="width:100%;">
+                <div style="font-size: 10px; color: #888; margin-top:2px;">Min</div>
+            </div>
+            <div style="flex:1;">
+                <input type="number" id="max-temp" placeholder="Max" step="0.1" disabled style="width:100%;">
+                <div style="font-size: 10px; color: #888; margin-top:2px;">Max</div>
+            </div>
         </div>
     </div>
     <div class="config-group hum">
         <label>Độ ẩm (%)</label>
         <div class="input-pair">
-            <input type="number" id="min-hum" placeholder="Min" step="1" disabled>
-            <input type="number" id="max-hum" placeholder="Max" step="1" disabled>
+            <div style="flex:1;">
+                <input type="number" id="min-hum" placeholder="Min" step="1" disabled style="width:100%;">
+                <div style="font-size: 10px; color: #888; margin-top:2px;">Min</div>
+            </div>
+            <div style="flex:1;">
+                <input type="number" id="max-hum" placeholder="Max" step="1" disabled style="width:100%;">
+                <div style="font-size: 10px; color: #888; margin-top:2px;">Max</div>
+            </div>
         </div>
     </div>
 </div>
@@ -471,6 +489,13 @@ for (let i = 1; i <= 4; i++) {
     onValue(ref(db, `DieuKhien/ThietBi${i}_Config`), (snapshot) => {
         const data = snapshot.val();
         if (data) {
+            // Lấy danh sách các ô input của thiết bị i
+            const nameInput = document.getElementById(`name-relay${i}`);
+            const modeInput = document.getElementById(`mode-relay${i}`);
+            const startInput = document.getElementById(`start-relay${i}`);
+            const stopInput = document.getElementById(`stop-relay${i}`);
+
+            // CHỈ cập nhật nếu người dùng không đang click vào ô đó
             document.getElementById(`name-relay${i}`).value = data.Name || "";
             document.getElementById(`mode-relay${i}`).value = data.Mode || "Manual";
             document.getElementById(`start-relay${i}`).value = data.Start || "";
@@ -625,7 +650,7 @@ setInterval(() => {
       // ... đặt đoạn này vào trong hàm startFirebaseSync() ...
 
 const btnToggleLock = document.getElementById('btn-toggle-lock');
-let isLocked = true; // Mặc định là bị khóa
+//let isLocked = true; // Mặc định là bị khóa
 
 btnToggleLock.addEventListener('click', () => {
     isLocked = !isLocked;
