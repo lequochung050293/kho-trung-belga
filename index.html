@@ -10,11 +10,14 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #121212; color: #ffffff;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; padding: 20px;
+            min-height: 100vh; 
+            padding: 10px;
+            display: flex; /* Giúp căn giữa toàn bộ body */
+            justify-content: center;
         }
 
         /* --- STYLE MÀN HÌNH ĐĂNG NHẬP BẢO MẬT --- */
@@ -47,11 +50,27 @@
 
         /* --- STYLE CONTAINER CHÍNH --- */
         .container {
-            display: none;
-            width: 100%; max-width: 700px; padding: 25px;
-            background: #1e1e1e; border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); text-align: center; border: 1px solid #2d2d2d;
-        }
+        display: none;
+        width: 100%; 
+        max-width: 700px; 
+        margin: 0 auto; /* Tự động căn giữa */
+        padding: 20px;
+        background: #1e1e1e; 
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); 
+        border: 1px solid #2d2d2d;
+    }
+
+    /* --- RESPONSIVE CHO ĐIỆN THOẠI --- */
+    @media (max-width: 768px) {
+        .card-container { flex-direction: column; }
+        .switch-group { grid-template-columns: 1fr !important; }
+        .config-inputs { flex-direction: column; }
+        .control-panel { flex-direction: column; }
+        .btn-excel { width: 100%; }
+        body { padding: 5px; }
+        .container { padding: 15px; border-radius: 0; } /* Tràn màn hình nếu cần */
+    }
         h2 { font-size: 22px; margin-bottom: 5px; color: #00adb5; text-transform: uppercase; }
         p.subtitle { font-size: 13px; color: #777; margin-bottom: 20px; }
         .card-container { display: flex; gap: 15px; margin-bottom: 15px; }
@@ -163,8 +182,10 @@
 </div>
 
 <div class="container" id="main-container">
-    <h2>Hệ Thống Giám Sát Kho Trứng Bel Gà Tân Châu 2</h2>
-    <p class="subtitle">Mặc định hiển thị ngày hôm nay - Chọn ngày để xem lịch sử cũ</p>
+   <div style="text-align: center; width: 100%; margin-bottom: 20px;">
+    <h2 style="margin-bottom: 5px;">Hệ Thống Giám Sát Kho Trứng Bel Gà Tân Châu 2</h2>
+    <p class="subtitle" style="margin: 0;">Mặc định hiển thị ngày hôm nay - Chọn ngày để xem lịch sử cũ</p>
+</div>
 <!-- Dán đoạn này thay thế đoạn cũ -->
 <div style="text-align: center; margin: 0 auto 20px auto; width: fit-content;">
     <a href="https://t.me/Canhbaokhotrung" target="_blank" style="display: flex; align-items: center; justify-content: center; background: #0088cc; color: #ffffff !important; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
