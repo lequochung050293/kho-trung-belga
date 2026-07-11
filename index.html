@@ -246,15 +246,69 @@
         Tham gia nhóm Telegram
     </a>
 </div>
-    <div class="card-container">
-        <div class="card temp">
-            <div class="info"><label>Nhiệt Độ (Mới nhất)</label><div class="value"><span id="txt-temp">No Signal</span></div></div>
+   <div class="card-container">
+  <!-- Thẻ Nhiệt Độ -->
+<div class="card temp">
+    <!-- Thêm style flex để đẩy chữ sang trái, icon sang phải -->
+    <div class="info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        
+        <!-- Khối bên trái: Gồm Nhãn và Giá trị nhiệt độ -->
+        <div>
+            <label style="display: block; margin-bottom: 6px;">
+                Nhiệt Độ (Mới nhất)
+            </label>
+            <div class="value"><span id="txt-temp">No Signal</span></div>
         </div>
-        <div class="card hum">
-            <div class="info"><label>Độ Ẩm (Mới nhất)</label><div class="value"><span id="txt-hum">No Signal</span></div></div>
-        </div>
-    </div>
 
+        <!-- Khối bên phải: SVG Thermometer (Đã tăng kích thước lên 48x48) -->
+        <svg width="48" height="48" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+             viewBox="0 0 512 512" xml:space="preserve" style="flex-shrink: 0;">
+            <circle style="fill:#FEE187;" cx="256" cy="381.47" r="59.943"/>
+            <g>
+                <path style="fill:#FFC61B;" d="M256,455.991c-41.09,0-74.52-33.43-74.52-74.52s33.43-74.52,74.52-74.52s74.52,33.43,74.52,74.52
+                    S297.09,455.991,256,455.991z M256,336.107c-25.014,0-45.364,20.35-45.364,45.364s20.35,45.364,45.364,45.364
+                    s45.364-20.35,45.364-45.364C301.364,356.458,281.014,336.107,256,336.107z"/>
+                <path style="fill:#FFC61B;" d="M371.339,320.336c-3.777-7.108-12.602-9.808-19.713-6.032c-7.11,3.779-9.809,12.604-6.032,19.713
+                    c7.706,14.499,11.779,30.909,11.779,47.455c0,27.531-10.849,53.289-30.549,72.528c-19.691,19.232-45.733,29.447-73.283,28.814
+                    c-54.612-1.29-98.984-46.815-98.911-101.482c0.051-38.57,21.546-73.269,56.093-90.557c4.937-2.469,8.054-7.516,8.054-13.037V58.856
+                    c0-16.377,13.324-29.701,29.701-29.701h15.044c16.377,0,29.701,13.324,29.701,29.701v59.697h-28.097
+                    c-8.051,0-14.578,6.526-14.578,14.578s6.526,14.578,14.578,14.578h28.098v22.587h-28.098c-8.051,0-14.578,6.526-14.578,14.578
+                    s6.526,14.578,14.578,14.578h28.098v22.587h-28.098c-8.051,0-14.578,6.526-14.578,14.578c0,8.051,6.526,14.578,14.578,14.578
+                    h28.098v17.46c0,8.051,6.526,14.578,14.578,14.578s14.578-6.526,14.578-14.578v-17.46h35.084c8.051,0,14.578-6.526,14.578-14.578
+                    c0-8.051-6.526-14.578-14.578-14.578h-35.084V147.71h35.084c8.051,0,14.578-6.526,14.578-14.578s-6.526-14.578-14.578-14.578
+                    h-35.084V58.856C322.378,26.403,295.975,0,263.522,0h-15.044c-32.453,0-58.856,26.403-58.856,58.856v210.229
+                    c-39.733,23.415-64.086,65.616-64.149,112.21c-0.095,70.388,57.047,129.007,127.377,130.667c1.066,0.026,2.125,0.038,3.187,0.038
+                    c34.295-0.001,66.563-13.12,91.159-37.141c25.362-24.773,39.332-57.938,39.332-93.388
+                    C386.527,360.172,381.275,339.032,371.339,320.336z"/>
+            </g>
+        </svg>
+
+    </div>
+</div>
+
+   <!-- Thẻ Độ Ẩm -->
+<div class="card hum">
+    <!-- Áp dụng flexbox để đẩy chữ sang trái, icon sang phải -->
+    <div class="info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        
+        <!-- Khối bên trái: Gồm Nhãn và Giá trị độ ẩm -->
+        <div>
+            <label style="display: block; margin-bottom: 6px;">
+                Độ Ẩm (Mới nhất)
+            </label>
+            <div class="value"><span id="txt-hum">No Signal</span></div>
+        </div>
+
+        <!-- Khối bên phải: SVG Mới (Đã đổi sang màu xanh #00bcd4 và chỉnh kích thước 48x48) -->
+        <svg fill="#00bcd4" width="48" height="48" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+            <title>humidity--alt</title>
+            <path d="M26,12a3.8978,3.8978,0,0,1-4-3.777,3.9017,3.9017,0,0,1,.6533-2.0639L25.17,2.4141a1.0381,1.0381,0,0,1,1.6592,0L29.3154,6.11A3.9693,3.9693,0,0,1,30,8.223,3.8978,3.8978,0,0,1,26,12Zm0-7.2368L24.3438,7.2257A1.89,1.89,0,0,0,24,8.223a2.0139,2.0139,0,0,0,4,0,1.98,1.98,0,0,0-.375-1.0466Z"/>
+            <path d="M23.5,30H8.5A6.4962,6.4962,0,0,1,7.2,17.1381a8.9938,8.9938,0,0,1,17.6006,0A6.4964,6.4964,0,0,1,23.5,30ZM16,12a7,7,0,0,0-6.9414,6.1452l-.0991.8122-.8155.064A4.4962,4.4962,0,0,0,8.5,28h15a4.4962,4.4962,0,0,0,.3564-8.9786l-.8154-.064-.0986-.8122A7.0022,7.0022,0,0,0,16,12Z"/>
+        </svg>
+
+    </div>
+</div>
+</div>
     <div id="alert-display">Đang kiểm tra trạng thái...</div>
 
     <div class="control-block">
