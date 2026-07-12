@@ -312,7 +312,8 @@
     <div id="alert-display">Đang kiểm tra trạng thái...</div>
 
     <div class="control-block">
-        <label class="title-label">Bảng Điều Khiển Thiết Bị (Chân IO ESP32)</label>
+<label class="title-label" style="color: #ccff00;">Bảng Điều Khiển Thiết Bị (Chân IO ESP32)</label>
+     
    <div class="switch-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
     
    <!-- Thiết bị 1 -->
@@ -433,11 +434,12 @@
     </div>
 </div>
 </div>
+</div>
 
   
    <div class="control-block" style="margin-top: 40px;"> <!-- <--- THÊM STYLE NÀY VÀO ĐÂY -->
-        <label class="title-label">Thiết lập ngưỡng cảnh báo (Min/Max)</label>
-        <!-- Tìm đoạn Thiết lập ngưỡng cảnh báo (Min/Max) và thay thế bằng đoạn này -->
+     <label class="title-label" style="color: #ccff00;">Thiết lập ngưỡng cảnh báo (Min/Max)</label>
+           <!-- Tìm đoạn Thiết lập ngưỡng cảnh báo (Min/Max) và thay thế bằng đoạn này -->
 <div class="config-inputs">
     <div class="config-group temp">
         <label>Nhiệt độ (°C)</label>
@@ -470,6 +472,11 @@
         <button class="btn-action btn-save-config" id="btn-save-config" style="background: #2196f3; color: white; margin-top: 15px;">LƯU CẤU HÌNH CẢNH BÁO</button>
 
     </div>
+</div>
+
+  <div class="control-block" style="margin-top: 40px;">
+<label class="title-label" style="color: #ccff00;">Lịch sử & Biểu đồ</label>
+
 
     <div class="control-panel">
         <input type="date" id="date-picker">
@@ -490,6 +497,7 @@
 
     <div class="status" id="status-text"><span class="dot" id="status-dot"></span> Đang đồng bộ dữ liệu...</div>
 </div>
+  </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
