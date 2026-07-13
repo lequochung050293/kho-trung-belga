@@ -427,6 +427,12 @@
     </div>
 </div>
 </div>
+<!-- Thêm nút này vào dưới cùng của thẻ Bảng Điều Khiển Thiết Bị -->
+<div style="width: 100%; display: flex; justify-content: center; margin-top: 15px;">
+    <button id="btn-lock-io" style="width: 100%; padding: 10px; font-weight: bold; background: #555; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        🔓 MỞ KHÓA CHỈNH SỬA
+    </button>
+</div>
 </div>
 
   
@@ -437,7 +443,7 @@
             Thiết lập ngưỡng cảnh báo (Min/Max)
         </label>
         <!-- Icon SVG Chuông Cảnh Báo khẩn cấp -->
-        <svg width="45px" height="45px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer; color: #FF0000;">
+        <svg width="45px" height="45px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer; color: #FF6347;">
             <g id="🔍-Product-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                 <g id="ic_fluent_alert_urgent_24_regular" fill="currentColor" fill-rule="nonzero">
                     <path d="M10.4285652,19.9240398 L13.9910618,18.4118497 C14.1243887,19.2921035 13.6531461,20.1845714 12.7958183,20.5484854 C11.9384904,20.5967586 11.2384904,20.6314228 10.4285652,19.9240398 Z M15.8612753,2.09351958 C17.9470123,3.23306377 19.5127784,4.69618867 20.5430129,6.48060721 C21.5732475,8.26502575 22.0574677,10.3525815 22.0014735,12.7286547 C21.9917149,13.1427533 21.6481107,13.4705357 21.2340121,13.4607771 C20.8199136,13.4510185 20.4921312,13.1074143 20.5018898,12.6933157 C20.5516452,10.5819824 20.130407,8.76595272 19.2439748,7.23060721 C18.3575427,5.69526171 16.995434,4.42244386 15.142088,3.40986662 C14.7785888,3.21126852 14.64491,2.75559862 14.8435081,2.39209942 C15.0421062,2.02860022 15.4977761,1.89492147 15.8612753,2.09351958 Z M6.71143523,6.51507125 C9.57318945,5.24093618 12.9155777,6.44569503 14.3109282,9.26058763 L14.4092208,9.47000529 L15.6965645,12.3618514 L17.3948846,13.8316167 C17.487575,13.9118765 17.5678872,14.0052793 17.6610082,14.1564119 L17.7197022,14.2707162 C17.999089,14.902012 17.7138105,15.6402661 17.082516,15.9196558 L6.75587375,20.4898206 C6.59654468,20.5603335 6.42423407,20.5967586 6.24999915,20.5967586 C5.55964321,20.5967586 4.99999915,20.0371145 4.99999923,19.3471059 L4.99891404,17.0041673 L3.7565386,14.2128401 C2.44303472,11.2626621 3.76571579,7.82659005 6.71143523,6.51507125 Z M5.12689359,13.6028178 L6.49876642,16.6850953 L6.49982132,18.9628086 L16.114854,14.7075708 L14.4621766,13.2773059 L13.0453321,10.094158 L12.960261,9.91285788 C11.9288812,7.83248493 9.4484636,6.93842213 7.3215402,7.88538944 C5.13205213,8.86021233 4.15056087,11.4099386 5.12689359,13.6028178 Z M15.6237146,5.6941638 C16.5907076,6.2214405 17.3656967,6.9887979 17.9399727,7.98347319 C18.5142488,8.97814848 18.7913052,10.0329874 18.7644437,11.1340663 C18.7543418,11.5481566 18.4104659,11.8756539 17.9963756,11.8655519 C17.5822852,11.85545 17.2547879,11.5115741 17.2648899,11.0974838 C17.2849329,10.2758998 17.0791806,9.49253752 16.6409346,8.73347319 C16.2026886,7.97440887 15.6271532,7.40454099 14.905619,7.01110678 C14.5419553,6.81281017 14.4078987,6.35725128 14.6061953,5.99358752 C14.8044919,5.62992376 15.2600508,5.4958672 15.6237146,5.6941638 Z" id="🎨-Color"/>
@@ -480,6 +486,42 @@
     </div>
 </div>
 
+<!-- THẺ CÀI ĐẶT MẬT KHẨU (CÓ ICON SVG CHÌA KHÓA MÀU ĐỎ) -->
+<div class="control-block" style="margin-top: 40px;">
+    <!-- Khối Header chứa Tiêu đề bên trái và Icon Chìa khóa màu đỏ bên phải -->
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
+        <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold; font-size: 16px; text-transform: none;">
+            Cài đặt mật khẩu cấu hình
+        </label>
+        <!-- Icon SVG Chìa khóa màu cam -->
+        <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;">
+            <path d="M15.6807 14.5869C19.1708 14.5869 22 11.7692 22 8.29344C22 4.81767 19.1708 2 15.6807 2C12.1907 2 9.3615 4.81767 9.3615 8.29344C9.3615 9.90338 10.0963 11.0743 10.0963 11.0743L2.45441 18.6849C2.1115 19.0264 1.63143 19.9143 2.45441 20.7339L3.33616 21.6121C3.67905 21.9048 4.54119 22.3146 5.2466 21.6121L6.27531 20.5876C7.30403 21.6121 8.4797 21.0267 8.92058 20.4412C9.65538 19.4167 8.77362 18.3922 8.77362 18.3922L9.06754 18.0995C10.4783 19.5045 11.7128 18.6849 12.1537 18.0995C12.8885 17.075 12.1537 16.0505 12.1537 16.0505C11.8598 15.465 11.272 15.465 12.0067 14.7333L12.8885 13.8551C13.5939 14.4405 15.0439 14.5869 15.6807 14.5869Z" stroke="#FFC125" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M17.8853 8.29353C17.8853 9.50601 16.8984 10.4889 15.681 10.4889C14.4635 10.4889 13.4766 9.50601 13.4766 8.29353C13.4766 7.08105 14.4635 6.09814 15.681 6.09814C16.8984 6.09814 17.8853 7.08105 17.8853 8.29353Z" stroke="#FFC125" stroke-width="1.5"/>
+        </svg>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+        <!-- Ô nhập mật khẩu cũ -->
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <label for="old-password" style="font-size: 14px; color: #ccc;">Mật khẩu cũ hiện tại:</label>
+            <input type="password" id="old-password" placeholder="Nhập mật khẩu cũ..." 
+                   style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #2d2d2d; color: #fff;">
+        </div>
+
+        <!-- Ô nhập mật khẩu mới -->
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <label for="new-password" style="font-size: 14px; color: #ccc;">Mật khẩu mới:</label>
+            <input type="password" id="new-password" placeholder="Nhập mật khẩu mới..." 
+                   style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #2d2d2d; color: #fff;">
+        </div>
+
+        <!-- Nút Đặt mật khẩu -->
+        <button id="btn-set-password" 
+                style="margin-top: 10px; padding: 10px; background: #ff9800; border: none; border-radius: 4px; color: #000; font-weight: bold; cursor: pointer; transition: 0.2s;">
+            ĐẶT MẬT KHẨU
+        </button>
+    </div>
+</div>
  <!-- Tìm thẻ chứa khối Lịch sử & Biểu đồ và thay thế toàn bộ bằng đoạn này -->
 <div class="control-block" style="margin-top: 40px;">
     <!-- Khối Header chứa Tiêu đề bên trái và Icon Lịch sử bên phải -->
@@ -534,7 +576,8 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-
+  import CryptoJS from "https://esm.sh/crypto-js";
+  
   const firebaseConfig = {
     apiKey: "AIzaSyBQwoGM-JWiYh27MRwt5IOgedL5QTj-AmM",
     authDomain: "cam-bien-nhiet-do-do-am-d20f3.firebaseapp.com",
@@ -570,12 +613,15 @@
   const maxHumInput = document.getElementById('max-hum');
   const btnSaveConfig = document.getElementById('btn-save-config');
   const alertDisplay = document.getElementById('alert-display'); // Khai báo phần tử mới
+  const btnToggleLock = document.getElementById('btn-toggle-lock');
+  const btnLockIo = document.getElementById('btn-lock-io');
 
   let statusRelay1 = 0;
   let statusRelay2 = 0;
   let statusRelay3 = 0;
   let statusRelay4 = 0;
   let isLocked = true;
+  let isIoLocked = true;
   let excelRawData = [];
    
    // Thêm các biến này vào cùng khu vực với các biến relay
@@ -616,6 +662,58 @@
       options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
   });
 
+document.getElementById('btn-set-password').addEventListener('click', async () => {
+    const oldPasswordInput = document.getElementById('old-password').value;
+    const newPasswordInput = document.getElementById('new-password').value;
+
+    // 1. Kiểm tra đầu vào cơ bản
+    if (!newPasswordInput) {
+        alert("Vui lòng nhập mật khẩu mới!");
+        return;
+    }
+
+    if (newPasswordInput.length < 6) {
+        alert("Mật khẩu mới phải có ít nhất 6 ký tự!");
+        return;
+    }
+
+    // 2. Mã hóa SHA-256
+    const hashedOldInput = CryptoJS.SHA256(oldPasswordInput).toString();
+    const hashedNewInput = CryptoJS.SHA256(newPasswordInput).toString();
+    const passwordRef = ref(db, 'device/config/password');
+
+    try {
+        // Tải động cả 'get' và 'set' từ SDK Firebase để đảm bảo không sót hàm
+        const { get, set } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js");
+        const snapshot = await get(passwordRef);
+
+        // NẾU TRÊN FIREBASE ĐÃ CÓ MẬT KHẨU TRƯỚC ĐÓ
+        if (snapshot.exists()) {
+            if (!oldPasswordInput) {
+                alert("Hệ thống đã có mật khẩu, vui lòng nhập Mật khẩu cũ để xác thực!");
+                return;
+            }
+            const currentHashedPassword = snapshot.val();
+            if (hashedOldInput !== currentHashedPassword) {
+                alert("Mật khẩu cũ không chính xác!");
+                return;
+            }
+        } 
+        // NẾU CHƯA CÓ (LẦN ĐẦU TIÊN) -> Tự động bỏ qua và chạy thẳng xuống lệnh set() bên dưới
+
+        // 3. Thực hiện ghi lên Firebase
+        await set(passwordRef, hashedNewInput);
+        alert("Đặt mật khẩu cấu hình thành công!");
+
+        // 4. Xóa trống các ô nhập liệu sau khi thành công
+        document.getElementById('old-password').value = "";
+        document.getElementById('new-password').value = "";
+
+    } catch (error) {
+        console.error("Lỗi Firebase:", error);
+        alert("Đã xảy ra lỗi, vui lòng kiểm tra tab Console (F12) hoặc cấu hình Rules.");
+    }
+});
   function unlockSystem() {
       document.getElementById('login-overlay').style.opacity = '0';
       setTimeout(() => {
@@ -700,7 +798,7 @@ onValue(ref(db, 'DieuKhien'), (snapshot) => {
             switchEl.checked = (status === 1);
             
             // --- LOGIC MỚI: Khóa nút nếu không phải Manual ---
-            if (currentMode === "Manual") {
+            if (currentMode === "Manual"&& !isIoLocked) {
                 switchEl.disabled = false;     // Cho phép bấm
                 switchEl.style.cursor = "pointer";
                 switchEl.parentElement.style.opacity = "1";
@@ -820,7 +918,7 @@ setInterval(() => {
 
       // ... đặt đoạn này vào trong hàm startFirebaseSync() ...
 
-const btnToggleLock = document.getElementById('btn-toggle-lock');
+//const btnToggleLock = document.getElementById('btn-toggle-lock');
 //let isLocked = true; // Mặc định là bị khóa
 
 btnToggleLock.addEventListener('click', () => {
@@ -831,6 +929,51 @@ btnToggleLock.addEventListener('click', () => {
     btnToggleLock.innerText = isLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
     btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
 });
+
+
+//const btnLockIo = document.getElementById('btn-lock-io');
+//let isIoLocked = true; // SỬA 1: Mở comment dòng này để đặt mặc định là KHÓA
+
+// Hàm dùng để cập nhật trạng thái On/Off của các phần tử bên trên
+function ápDụngTrạngTháiKhóa(cardParent, locked) {
+    const ioElements = cardParent.querySelectorAll('input, select, button:not(#btn-lock-io)');
+    ioElements.forEach(el => {
+        el.disabled = locked;
+    });
+}
+
+// SỬA 2: Chạy khóa ngay lập tức khi tải trang xong
+document.addEventListener("DOMContentLoaded", function() {
+    const cardParent = btnLockIo.closest('.control-block');
+    if (cardParent) {
+        ápDụngTrạngTháiKhóa(cardParent, isIoLocked); // Ép khóa ngay từ đầu (isIoLocked = true)
+    }
+});
+
+btnLockIo.addEventListener('click', function() {
+    isIoLocked = !isIoLocked; // Đảo ngược trạng thái khi bấm (Khóa -> Mở, Mở -> Khóa)
+
+    const cardParent = this.closest('.control-block'); 
+    if (cardParent) {
+        ápDụngTrạngTháiKhóa(cardParent, isIoLocked);
+    }
+
+    // Đổi chữ và đổi màu nền theo trạng thái mới
+    this.innerText = isIoLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
+    this.style.background = isIoLocked ? "#555" : "#f44336";
+});
+
+
+
+// --- ĐOẠN XỬ LÝ KHI VỪA TẢI TRANG XONG ---
+// Tìm thẻ cha và ép tất cả các ô nhập liệu phải KHÓA ngay lập tức, không kích hoạt click giả nữa
+const cardParentOnLoad = btnLockIo.closest('.control-block');
+if (cardParentOnLoad) {
+    ápDụngTrạngTháiKhóa(cardParentOnLoad, true); 
+}
+// Đảm bảo nút hiển thị đúng chữ "MỞ KHÓA CHỈNH SỬA" màu xám lúc ban đầu
+btnLockIo.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
+btnLockIo.style.background = "#555";
 
 // Cập nhật lại sự kiện nhấn nút Lưu cấu hình
 btnSaveConfig.addEventListener('click', () => {
@@ -911,6 +1054,7 @@ btnSaveConfig.addEventListener('click', () => {
           })
           .catch(() => document.getElementById('error-msg').style.display = 'block');
   });
+
 </script>
 </body>
 </html> 
