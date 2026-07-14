@@ -711,7 +711,7 @@ document.getElementById('btn-login').addEventListener('click', () => {
       deviceSelectionPage.style.display = 'block';
       
       deviceSelectionPage.innerHTML = `
-          <h2 style="color: #00adb5; font-size: 24px; margin-bottom: 25px; text-transform: uppercase;">Hệ Thống Quản Lý Kho Bel Gà</h2>
+          <h2 style="color: #00adb5; font-size: 24px; margin-bottom: 25px; text-transform: uppercase;">Hệ Thống Quản Lý Kho Trứng Bel Gà</h2>
           <div id="device-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;"></div>
           <button id="btn-add-new-device" style="background: #2e7d32; color: white; border: none; padding: 12px 25px; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px;">
               ➕ TẠO THÊM THIẾT BỊ MỚI
@@ -734,7 +734,7 @@ document.getElementById('btn-login').addEventListener('click', () => {
                   const card = document.createElement('div');
                   card.style.cssText = "background: #252525; padding: 20px; border-radius: 12px; border-left: 5px solid #00adb5; text-align: left; cursor: pointer; transition: 0.2s;";
                   card.innerHTML = `
-                      <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase;">🏢 ${id}</h3>
+                      <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase;">💻 ${id}</h3>
                       <p style="margin: 5px 0; color: #aaa;">Nhiệt độ: <b style="color: #ff5722;">${t}°C</b></p>
                       <p style="margin: 5px 0; color: #aaa;">Độ ẩm: <b style="color: #00bcd4;">${h}%</b></p>
                   `;
@@ -830,7 +830,7 @@ set(ref(db, `devices/${formatId}`), {
       if (!document.getElementById('btn-back-to-list')) {
           const backBtn = document.createElement('button');
           backBtn.id = 'btn-back-to-list';
-          backBtn.innerText = "⬅️ ĐỔI THIẾT BỊ KHO";
+          backBtn.innerText = "⬅️ ĐỔI THIẾT BỊ KHO TRỨNG";
           backBtn.style.cssText = "background: #555; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px;";
           backBtn.addEventListener('click', () => {
               // Reset mốc đồng bộ thời gian thực khi thoát ra ngoài danh sách tổng
