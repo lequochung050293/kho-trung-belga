@@ -574,7 +574,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import CryptoJS from "https://esm.sh/crypto-js";
   
@@ -921,18 +921,64 @@ setInterval(() => {
 //const btnToggleLock = document.getElementById('btn-toggle-lock');
 //let isLocked = true; // Mặc định là bị khóa
 
-btnToggleLock.addEventListener('click', () => {
-    isLocked = !isLocked;
+btnToggleLock.addEventListener('click', async () => {
+    // 1. Nếu ĐANG KHÓA -> Người dùng muốn MỞ KHÓA -> Đòi mật khẩu
+    if (isLocked) {
+        const userPassword = prompt("Vui lòng nhập mật khẩu cấu hình ngưỡng:");
+        
+        // Nếu bấm Hủy (Cancel) thì dừng lại
+        if (userPassword === null) return; 
+
+        if (userPassword.trim() === "") {
+            alert("❌ Vui lòng không để trống mật khẩu!");
+            return;
+        }
+
+        try {
+            // Tải động hàm get từ thư viện Firebase (giống hệt code lưu mật khẩu của bạn)
+            const { get } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js");
+            const passwordRef = ref(db, 'device/config/password'); // Đúng đường dẫn trên Firebase
+            const snapshot = await get(passwordRef);
+
+            if (snapshot.exists()) {
+                const currentHashedPassword = snapshot.val();
+                
+                // Mã hóa SHA-256 mật khẩu người dùng vừa nhập bằng CryptoJS giống nút lưu
+                const hashedUserInput = CryptoJS.SHA256(userPassword).toString();
+
+                // So sánh chuỗi đã mã hóa
+                if (hashedUserInput !== currentHashedPassword) {
+                    alert("❌ Mật khẩu cấu hình không chính xác!");
+                    return; // Dừng lại, giữ nguyên trạng thái khóa
+                }
+            } else {
+                // Trường hợp Firebase chưa từng được đặt mật khẩu trước đó
+                alert("⚠️ Hệ thống chưa cấu hình mật khẩu trên Firebase. Tự động mở khóa.");
+            }
+            
+            // Nếu đúng mật khẩu -> Đổi trạng thái sang MỞ KHÓA
+            isLocked = false;
+            alert("🔓 Mở khóa thành công! Bạn có thể chỉnh sửa ngưỡng.");
+
+        } catch (error) {
+            console.error("Lỗi xác thực Firebase:", error);
+            alert("❌ Đã xảy ra lỗi khi kết nối hoặc mã hóa (F12 để xem chi tiết).");
+            return;
+        }
+    } else {
+        // 2. Nếu ĐANG MỞ KHÓA -> Người dùng bấm để KHÓA LẠI (Không cần mật khẩu)
+        isLocked = true;
+    }
+
+    // 3. Cập nhật trạng thái các ô nhập dựa trên biến của bạn
     [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => {
-        el.disabled = isLocked;
+        if (el) el.disabled = isLocked;
     });
+
+    // 4. Cập nhật chữ và màu nền hiển thị trên nút bấm
     btnToggleLock.innerText = isLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
     btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
 });
-
-
-//const btnLockIo = document.getElementById('btn-lock-io');
-//let isIoLocked = true; // SỬA 1: Mở comment dòng này để đặt mặc định là KHÓA
 
 // Hàm dùng để cập nhật trạng thái On/Off của các phần tử bên trên
 function ápDụngTrạngTháiKhóa(cardParent, locked) {
@@ -942,28 +988,73 @@ function ápDụngTrạngTháiKhóa(cardParent, locked) {
     });
 }
 
-// SỬA 2: Chạy khóa ngay lập tức khi tải trang xong
+// Chạy khóa ngay lập tức khi tải trang xong
 document.addEventListener("DOMContentLoaded", function() {
-    const cardParent = btnLockIo.closest('.control-block');
-    if (cardParent) {
-        ápDụngTrạngTháiKhóa(cardParent, isIoLocked); // Ép khóa ngay từ đầu (isIoLocked = true)
+    // Lưu ý: Đảm bảo biến btnLockIo và isIoLocked đã được định nghĩa ở phạm vi toàn cục (global) phía trên
+    if (typeof btnLockIo !== 'undefined' && btnLockIo) {
+        const cardParent = btnLockIo.closest('.control-block');
+        if (cardParent) {
+            ápDụngTrạngTháiKhóa(cardParent, isIoLocked); // Ép khóa ngay từ đầu
+        }
     }
 });
 
-btnLockIo.addEventListener('click', function() {
-    isIoLocked = !isIoLocked; // Đảo ngược trạng thái khi bấm (Khóa -> Mở, Mở -> Khóa)
-
+// Thêm từ khóa 'async' vào trước function để dùng được await lấy mật khẩu từ Firebase
+btnLockIo.addEventListener('click', async function() {
     const cardParent = this.closest('.control-block'); 
+
+    // 1. Nếu ĐANG KHÓA -> Yêu cầu mật khẩu để MỞ KHÓA
+    if (isIoLocked) {
+        const userPassword = prompt("Vui lòng nhập mật khẩu điều khiển thiết bị:");
+        
+        if (userPassword === null) return; 
+
+        if (userPassword.trim() === "") {
+            alert("❌ Vui lòng không để trống mật khẩu!");
+            return;
+        }
+
+        try {
+            // Tải động hàm get từ thư viện Firebase
+            const { get } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js");
+            const passwordRef = ref(db, 'device/config/password');
+            const snapshot = await get(passwordRef);
+
+            if (snapshot.exists()) {
+                const currentHashedPassword = snapshot.val();
+                // Băm mật khẩu người dùng nhập
+                const hashedUserInput = CryptoJS.SHA256(userPassword).toString();
+
+                if (hashedUserInput !== currentHashedPassword) {
+                    alert("❌ Mật khẩu không chính xác! Không thể điều khiển.");
+                    return; 
+                }
+            } else {
+                alert("⚠️ Hệ thống chưa cấu hình mật khẩu trên Firebase. Tự động mở khóa.");
+            }
+            
+            isIoLocked = false;
+            alert("🔓 Mở khóa thành công!");
+
+        } catch (error) {
+            console.error("Lỗi xác thực:", error);
+            alert("❌ Đã xảy ra lỗi xác thực (F12 để xem chi tiết).");
+            return;
+        }
+    } else {
+        // 2. Nếu ĐANG MỞ KHÓA -> Bấm để KHÓA LẠI
+        isIoLocked = true;
+    }
+
+    // 3. Áp dụng trạng thái khóa lên các switch/button con
     if (cardParent) {
         ápDụngTrạngTháiKhóa(cardParent, isIoLocked);
     }
 
-    // Đổi chữ và đổi màu nền theo trạng thái mới
+    // 4. Đổi chữ và màu nền nút
     this.innerText = isIoLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
     this.style.background = isIoLocked ? "#555" : "#f44336";
 });
-
-
 
 // --- ĐOẠN XỬ LÝ KHI VỪA TẢI TRANG XONG ---
 // Tìm thẻ cha và ép tất cả các ô nhập liệu phải KHÓA ngay lập tức, không kích hoạt click giả nữa
