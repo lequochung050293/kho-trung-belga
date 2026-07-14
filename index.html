@@ -574,8 +574,8 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import CryptoJS from "https://esm.sh/crypto-js";
   
   const firebaseConfig = {
@@ -591,6 +591,9 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const auth = getAuth(app);
+
+  // --- BIẾN TOÀN CỤC THAY ĐỔI ĐỂ ĐA NHÁNH ---
+  let currentDeviceId = ""; // Sẽ lưu ID thiết bị được chọn (VD: device1)
 
   const tempElement = document.getElementById('txt-temp');
   const humElement = document.getElementById('txt-hum');
@@ -612,19 +615,14 @@
   const minHumInput = document.getElementById('min-hum');
   const maxHumInput = document.getElementById('max-hum');
   const btnSaveConfig = document.getElementById('btn-save-config');
-  const alertDisplay = document.getElementById('alert-display'); // Khai báo phần tử mới
+  const alertDisplay = document.getElementById('alert-display'); 
   const btnToggleLock = document.getElementById('btn-toggle-lock');
   const btnLockIo = document.getElementById('btn-lock-io');
 
-  let statusRelay1 = 0;
-  let statusRelay2 = 0;
-  let statusRelay3 = 0;
-  let statusRelay4 = 0;
   let isLocked = true;
   let isIoLocked = true;
   let excelRawData = [];
    
-   // Thêm các biến này vào cùng khu vực với các biến relay
   let configMinTemp = 0, configMaxTemp = 100;
   let configMinHum = 0, configMaxHum = 100;
     
@@ -636,6 +634,12 @@
   const todayStr = localDate.getFullYear() + '-' + String(localDate.getMonth() + 1).padStart(2, '0') + '-' + String(localDate.getDate()).padStart(2, '0');
   datePicker.value = todayStr;
   datePicker.max = todayStr;
+
+  // Khởi tạo vùng hiển thị giao diện danh sách kho (Device Selection Page) ẩn ban đầu
+  const deviceSelectionPage = document.createElement("div");
+  deviceSelectionPage.id = "device-selection-page";
+  deviceSelectionPage.style.cssText = "display:none; padding: 25px; max-width: 1000px; margin: 0 auto; text-align: center; color: white;";
+  document.body.appendChild(deviceSelectionPage);
 
   const optionsCommon = (color, titleText) => ({
       responsive: true, maintainAspectRatio: false,
@@ -662,437 +666,415 @@
       options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
   });
 
-document.getElementById('btn-set-password').addEventListener('click', async () => {
-    const oldPasswordInput = document.getElementById('old-password').value;
-    const newPasswordInput = document.getElementById('new-password').value;
+  import { 
+    setPersistence, 
+    browserSessionPersistence 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // 1. Kiểm tra đầu vào cơ bản
-    if (!newPasswordInput) {
-        alert("Vui lòng nhập mật khẩu mới!");
+// Khởi động login
+document.getElementById('btn-login').addEventListener('click', () => {
+    const userEmail = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!userEmail || !password) {
+        alert("Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
         return;
     }
 
-    if (newPasswordInput.length < 6) {
-        alert("Mật khẩu mới phải có ít nhất 6 ký tự!");
-        return;
-    }
+    // 1. Ép Firebase cấu hình không lưu bộ nhớ lâu dài (F5 hoặc tắt tab là mất phiên)
+    setPersistence(auth, browserSessionPersistence)
+        .then(() => {
+            // 2. Tiến hành xác thực đăng nhập
+            return signInWithEmailAndPassword(auth, userEmail, password);
+        })
+        .then(() => {
+            // 3. Đăng nhập thành công: Ẩn màn hình đăng nhập
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('error-msg').style.display = 'none';
 
-    // 2. Mã hóa SHA-256
-    const hashedOldInput = CryptoJS.SHA256(oldPasswordInput).toString();
-    const hashedNewInput = CryptoJS.SHA256(newPasswordInput).toString();
-    const passwordRef = ref(db, 'device/config/password');
+            // 4. CHUYỂN HƯỚNG: Gọi hàm hiển thị danh sách/tạo thiết bị theo ý bạn
+            hienThiDanhSachKho(); 
 
-    try {
-        // Tải động cả 'get' và 'set' từ SDK Firebase để đảm bảo không sót hàm
-        const { get, set } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js");
-        const snapshot = await get(passwordRef);
-
-        // NẾU TRÊN FIREBASE ĐÃ CÓ MẬT KHẨU TRƯỚC ĐÓ
-        if (snapshot.exists()) {
-            if (!oldPasswordInput) {
-                alert("Hệ thống đã có mật khẩu, vui lòng nhập Mật khẩu cũ để xác thực!");
-                return;
-            }
-            const currentHashedPassword = snapshot.val();
-            if (hashedOldInput !== currentHashedPassword) {
-                alert("Mật khẩu cũ không chính xác!");
-                return;
-            }
-        } 
-        // NẾU CHƯA CÓ (LẦN ĐẦU TIÊN) -> Tự động bỏ qua và chạy thẳng xuống lệnh set() bên dưới
-
-        // 3. Thực hiện ghi lên Firebase
-        await set(passwordRef, hashedNewInput);
-        alert("Đặt mật khẩu cấu hình thành công!");
-
-        // 4. Xóa trống các ô nhập liệu sau khi thành công
-        document.getElementById('old-password').value = "";
-        document.getElementById('new-password').value = "";
-
-    } catch (error) {
-        console.error("Lỗi Firebase:", error);
-        alert("Đã xảy ra lỗi, vui lòng kiểm tra tab Console (F12) hoặc cấu hình Rules.");
-    }
+            // Xóa sạch text trong ô nhập để bảo mật an toàn
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+        })
+        .catch((error) => {
+            console.error("Lỗi đăng nhập:", error);
+            document.getElementById('error-msg').style.display = 'block';
+        });
 });
-  function unlockSystem() {
-      document.getElementById('login-overlay').style.opacity = '0';
-      setTimeout(() => {
-          document.getElementById('login-overlay').style.display = 'none';
-          document.getElementById('main-container').style.display = 'block';
-          startFirebaseSync();
-      }, 400);
-  }
-function saveDeviceConfig(i) {
-    // 1. Lấy dữ liệu từ giao diện
 
-    const name = document.getElementById(`name-relay${i}`).value;
-    const mode = document.getElementById(`mode-relay${i}`).value;
-    const start = document.getElementById(`start-relay${i}`).value;
-    const stop = document.getElementById(`stop-relay${i}`).value;
-
-    // 2. Lưu cấu hình chung
-    set(ref(db, `DieuKhien/ThietBi${i}_Config`), {
-        Name: name,
-        Mode: mode,
-        Start: start,
-        Stop: stop
-    });
-
-    // 3. Logic ép trạng thái IO:
-    // CHỈ ép về 0 (Tắt) khi đang lưu ở chế độ THỦ CÔNG
-    if (mode === "Manual") {
-        set(ref(db, `DieuKhien/ThietBi${i}`), 0); 
-        alert(`Đã lưu cấu hình. Thiết bị ${i} đã được đưa về trạng thái TẮT (Thủ công).`);
-    } else {
-        // Ở chế độ Tự động (Nhiệt độ/Độ ẩm), KHÔNG làm gì cả.
-        // ESP32 sẽ tự cập nhật chế độ mới và tự vận hành theo cảm biến ngay lập tức.
-        alert(`Đã lưu cấu hình. Thiết bị ${i} sẽ tự vận hành theo chế độ ${mode}.`);
-    }
-}
-function startFirebaseSync() {
-  
-   
-      // Thay thế phần mục 2 cũ bằng đoạn này:
-// 2. Lắng nghe Relay và Cấu hình
-for (let i = 1; i <= 4; i++) {
-    onValue(ref(db, `DieuKhien/ThietBi${i}_Config`), (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            // Lấy danh sách các ô input của thiết bị i
-            const nameInput = document.getElementById(`name-relay${i}`);
-            const modeInput = document.getElementById(`mode-relay${i}`);
-            const startInput = document.getElementById(`start-relay${i}`);
-            const stopInput = document.getElementById(`stop-relay${i}`);
-
-            // CHỈ cập nhật nếu người dùng không đang click vào ô đó
-            document.getElementById(`name-relay${i}`).value = data.Name || "";
-            document.getElementById(`mode-relay${i}`).value = data.Mode || "Manual";
-            document.getElementById(`start-relay${i}`).value = data.Start || "";
-            document.getElementById(`stop-relay${i}`).value = data.Stop || "";
-        }
-    });
-    
-    // Đảm bảo nút này gọi đúng hàm saveDeviceConfig
-    document.getElementById(`btn-save-relay${i}`).addEventListener('click', () => saveDeviceConfig(i));
-}
+  // --- TRANG HIỂN THỊ DANH SÁCH KHO TRỨNG ---
+  function hienThiDanhSachKho() {
+      document.getElementById('main-container').style.display = 'none';
+      deviceSelectionPage.style.display = 'block';
       
-      console.log("Đã kết nối Firebase!");
-  
+      deviceSelectionPage.innerHTML = `
+          <h2 style="color: #00adb5; font-size: 24px; margin-bottom: 25px; text-transform: uppercase;">Hệ Thống Quản Lý Kho Bel Gà</h2>
+          <div id="device-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;"></div>
+          <button id="btn-add-new-device" style="background: #2e7d32; color: white; border: none; padding: 12px 25px; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px;">
+              ➕ TẠO THÊM THIẾT BỊ MỚI
+          </button>
+      `;
 
-          // 3. Lắng nghe trạng thái Relay và Tên thiết bị
-onValue(ref(db, 'DieuKhien'), (snapshot) => {
-    const data = snapshot.val();
-    if(data) {
-        for(let i = 1; i <= 4; i++) {
-            const status = data[`ThietBi${i}`] ?? 0;
-            const config = data[`ThietBi${i}_Config`];
-            
-            const switchEl = document.getElementById(`switch-relay${i}`);
-            const labelEl = document.getElementById(`label-relay${i}`);
-            const deviceName = config ? config.Name : `TB ${i}`;
-            const currentMode = config ? config.Mode : "Manual"; // Lấy mode hiện tại
-            
-            // Cập nhật nhãn và trạng thái switch
-            labelEl.innerText = `${deviceName || 'TB ' + i}: ${status === 1 ? "ON" : "OFF"}`;
-            labelEl.style.color = status === 1 ? "#4caf50" : "#ccc";
-            switchEl.checked = (status === 1);
-            
-            // --- LOGIC MỚI: Khóa nút nếu không phải Manual ---
-            if (currentMode === "Manual"&& !isIoLocked) {
-                switchEl.disabled = false;     // Cho phép bấm
-                switchEl.style.cursor = "pointer";
-                switchEl.parentElement.style.opacity = "1";
-            } else {
-                switchEl.disabled = true;      // Khóa nút
-                switchEl.style.cursor = "not-allowed";
-                switchEl.parentElement.style.opacity = "0.5"; // Làm mờ nút
-            }
-        }
-    }
-});
+      // Lắng nghe danh sách từ node "devices" trên Firebase
+      onValue(ref(db, 'devices'), (snapshot) => {
+          const grid = document.getElementById('device-grid');
+          if (!grid) return;
+          grid.innerHTML = "";
+          
+          if (snapshot.exists()) {
+              const devicesData = snapshot.val();
+              Object.keys(devicesData).forEach(id => {
+                  const item = devicesData[id];
+                  const t = item.HienTai?.NhietDo ?? "--";
+                  const h = item.HienTai?.DoAm ?? "--";
 
-      // 4. Lắng nghe cấu hình ngưỡng & cảm biến (giữ nguyên logic cũ của bạn)
-     onValue(ref(db, 'CauHinh'), (snapshot) => {
-    const data = snapshot.val();
-    if(data) {
-        // Cập nhật ô input (để người dùng thấy)
-        minTempInput.value = data.MinTemp ?? "";
-        maxTempInput.value = data.MaxTemp ?? "";
-        minHumInput.value = data.MinHum ?? "";
-        maxHumInput.value = data.MaxHum ?? "";
-        
-        // CẬP NHẬT VÀO BIẾN DÙNG ĐỂ SO SÁNH
-        configMinTemp = parseFloat(data.MinTemp) || 0;
-        configMaxTemp = parseFloat(data.MaxTemp) || 100;
-        configMinHum = parseFloat(data.MinHum) || 0;
-        configMaxHum = parseFloat(data.MaxHum) || 100;
-    }
-});
-
-      onValue(ref(db, 'HienTai'), (snapshot) => {
-          const data = snapshot.val();
-          if(data) {
-              latestTemp = data.NhietDo ?? "No Signal";
-              latestHum = data.DoAm ?? "No Signal";
-              lastDeviceUpdateTime = Number(data.LastUpdate) || 0;
+                  const card = document.createElement('div');
+                  card.style.cssText = "background: #252525; padding: 20px; border-radius: 12px; border-left: 5px solid #00adb5; text-align: left; cursor: pointer; transition: 0.2s;";
+                  card.innerHTML = `
+                      <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase;">🏢 ${id}</h3>
+                      <p style="margin: 5px 0; color: #aaa;">Nhiệt độ: <b style="color: #ff5722;">${t}°C</b></p>
+                      <p style="margin: 5px 0; color: #aaa;">Độ ẩm: <b style="color: #00bcd4;">${h}%</b></p>
+                  `;
+                  card.onmouseover = () => card.style.background = "#2d2d2d";
+                  card.onmouseout = () => card.style.background = "#252525";
+                  
+                  // Sự kiện chọn thiết bị
+                  card.addEventListener('click', () => {
+                      currentDeviceId = id;
+                      deviceSelectionPage.style.display = 'none';
+                      document.getElementById('main-container').style.display = 'block';
+                      startFirebaseSync();
+                  });
+                  grid.appendChild(card);
+              });
           }
       });
 
-     
-  
+      // Sự kiện Tạo thêm thiết bị mới
+      document.getElementById('btn-add-new-device').addEventListener('click', () => {
+          const deviceIdInput = prompt("Nhập mã thiết bị mới (Ví dụ: device2, device3 - viết liền không dấu):");
+          if (!deviceIdInput) return;
+          const formatId = deviceIdInput.trim().toLowerCase();
 
+         // Thiết lập cấu trúc dữ liệu mặc định chuẩn hóa cho kho mới (Tất cả về giá trị mặc định rỗng/0)
+set(ref(db, `devices/${formatId}`), {
+    TenThietBi: formatId.toUpperCase(),
+    CauHinh: { MaxHum: "", MaxTemp: "", MinHum: "", MinTemp: "" },
+    HienTai: { DoAm: "", NhietDo: "", ThoiGian: "" },
+    DieuKhien: {
+        ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
+        ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
+        ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }, // Đã đồng bộ dạng số giống 1,2,4
+        ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }
+    },
+    device: { config: { password: "" } } // Mật khẩu trống để người dùng tự thiết lập ban đầu
+}).then(() => {
+    alert(`Tạo thiết bị [${formatId}] thành công với cấu hình trống mặc định!`);
+}).catch(e => alert("Lỗi tạo: " + e.message));
+      });
+  }
 
-// 1. Chỉ dùng onValue để hứng dữ liệu vào biến
-onValue(ref(db, 'HienTai'), (snapshot) => {
-    const data = snapshot.val();
-    if(data) {
-        latestTemp = data.NhietDo ?? "ERR";
-        latestHum = data.DoAm ?? "ERR";
-        lastDeviceUpdateTime = Date.now(); // Cập nhật mốc thời gian hiện tại
-    }
-});
+  // --- ĐỔI MẬT KHẨU CHO RIÊNG TỪNG THIẾT BỊ ---
+  document.getElementById('btn-set-password').addEventListener('click', async () => {
+      const oldPasswordInput = document.getElementById('old-password').value;
+      const newPasswordInput = document.getElementById('new-password').value;
 
-// 2. Dùng setInterval để "trình diễn" lên màn hình mỗi 2 giây
-setInterval(() => {
-    const txtTemp = document.getElementById('txt-temp');
-    const txtHum = document.getElementById('txt-hum');
-    const alertDisplay = document.getElementById('alert-display');
-    const statusText = document.getElementById('status-text');
+      if (!newPasswordInput) { alert("Vui lòng nhập mật khẩu mới!"); return; }
+      if (newPasswordInput.length < 6) { alert("Mật khẩu mới phải có ít nhất 6 ký tự!"); return; }
 
-    const now = Date.now();
-    const timeSinceLastUpdate = now - lastDeviceUpdateTime;
+      const hashedOldInput = CryptoJS.SHA256(oldPasswordInput).toString();
+      const hashedNewInput = CryptoJS.SHA256(newPasswordInput).toString();
+      const passwordRef = ref(db, `devices/${currentDeviceId}/device/config/password`);
 
-    // --- KIỂM TRA MẤT KẾT NỐI (Nếu quá 15 giây không có dữ liệu mới) ---
-    if (lastDeviceUpdateTime === 0 || timeSinceLastUpdate > 15000) {
-        txtTemp.innerText = "-";
-        txtHum.innerText = "-";
-        statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ MẤT KẾT NỐI ESP32!`;
-        alertDisplay.innerText = "⚠️ ESP32 ĐANG NGOẠI TUYẾN (OFFLINE)!";
-        alertDisplay.style.color = "#ff5722";
-        return; // Dừng lại, không chạy tiếp các dòng dưới
-    }
+      try {
+          const snapshot = await get(passwordRef);
+          if (snapshot.exists()) {
+              if (!oldPasswordInput) { alert("Hệ thống đã có mật khẩu, vui lòng nhập Mật khẩu cũ!"); return; }
+              if (hashedOldInput !== snapshot.val()) { alert("Mật khẩu cũ không chính xác!"); return; }
+          } 
+          await set(passwordRef, hashedNewInput);
+          alert("Đặt mật khẩu cấu hình thành công!");
+          document.getElementById('old-password').value = "";
+          document.getElementById('new-password').value = "";
+      } catch (error) {
+          alert("Lỗi Firebase: " + error.message);
+      }
+  });
 
-    // --- KIỂM TRA LỖI CẢM BIẾN ---
-    if (latestTemp === "ERR" || latestTemp === "No Signal") {
-        txtTemp.innerText = "LỖI";
-        txtHum.innerText = "LỖI";
-        statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ Lỗi cảm biến!`;
-        alertDisplay.innerText = "⚠️ CẢM BIẾN KHÔNG ĐỌC ĐƯỢC DỮ LIỆU!";
-        alertDisplay.style.color = "#ff5722";
-    } else {
-        // --- HIỂN THỊ BÌNH THƯỜNG ---
-       document.getElementById('txt-temp').innerText = latestTemp + "°C";
-        document.getElementById('txt-hum').innerText = latestHum + "%";
-        
-        statusText.innerHTML = `<span class="dot" id="status-dot"></span> Đã đồng bộ thành công!`;
-        
-        const valT = parseFloat(latestTemp), valH = parseFloat(latestHum);
-        // THAY THẾ BẰNG:
-        const minT = configMinTemp;
-        const maxT = configMaxTemp;
-        const minH = configMinHum;
-        const maxH = configMaxHum;
+// --- LƯU CẤU HÌNH THIẾT BỊ CÓ PHÂN NHÁNH ---
+  function saveDeviceConfig(i) {
+      const name = document.getElementById(`name-relay${i}`).value;
+      const mode = document.getElementById(`mode-relay${i}`).value;
+      const start = document.getElementById(`start-relay${i}`).value;
+      const stop = document.getElementById(`stop-relay${i}`).value;
 
-        let msgT = (valT > maxT) ? "Nhiệt độ CAO" : ((valT < minT) ? "Nhiệt độ THẤP" : "Nhiệt độ BÌNH THƯỜNG");
-        let msgH = (valH > maxH) ? "Độ ẩm CAO" : ((valH < minH) ? "Độ ẩm THẤP" : "Độ ẩm BÌNH THƯỜNG");
-        
-        alertDisplay.innerText = msgT + " | " + msgH;
-        alertDisplay.style.color = (msgT.includes("BÌNH THƯỜNG") && msgH.includes("BÌNH THƯỜNG")) ? "#4caf50" : "#ff5722";
-    }
-}, 2000);
+      set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), {
+          Name: name, Mode: mode, Start: start, Stop: stop
+      });
 
-// Các sự kiện nút nhấn: Vừa bật/tắt Relay vừa ép sang chế độ Manual
-      for(let i = 1; i <= 4; i++) {
-          document.getElementById(`switch-relay${i}`).addEventListener('change', (e) => {
+      if (mode === "Manual") {
+          // Thiết bị 3 giờ được ghi trực tiếp giá trị số 0 giống hệt Thiết bị 1, 2, 4
+          set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), 0); 
+          alert(`Đã lưu cấu hình. Thiết bị ${i} được đưa về trạng thái TẮT (Thủ công).`);
+      } else {
+          alert(`Đã lưu cấu hình. Thiết bị ${i} tự động vận hành theo ${mode}.`);
+      }
+  }
+
+  // --- ĐỒNG BỘ DỮ LIỆU ĐA THIẾT BỊ REALTIME ---
+  function startFirebaseSync() {
+      // Bổ sung nút "Đổi thiết bị" nếu chưa có
+      if (!document.getElementById('btn-back-to-list')) {
+          const backBtn = document.createElement('button');
+          backBtn.id = 'btn-back-to-list';
+          backBtn.innerText = "⬅️ ĐỔI THIẾT BỊ KHO";
+          backBtn.style.cssText = "background: #555; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px;";
+          backBtn.addEventListener('click', () => {
+              // Reset mốc đồng bộ thời gian thực khi thoát ra ngoài danh sách tổng
+              lastDeviceUpdateTime = 0;
+              hienThiDanhSachKho();
+          });
+          document.getElementById('main-container').insertBefore(backBtn, document.getElementById('main-container').firstChild);
+      }
+
+      // Lắng nghe cấu hình và nút bấm của 4 Relay
+      for (let i = 1; i <= 4; i++) {
+          onValue(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), (snapshot) => {
+              const data = snapshot.val();
+              if (data) {
+                  document.getElementById(`name-relay${i}`).value = data.Name || "";
+                  document.getElementById(`mode-relay${i}`).value = data.Mode || "Manual";
+                  document.getElementById(`start-relay${i}`).value = data.Start || "";
+                  document.getElementById(`stop-relay${i}`).value = data.Stop || "";
+              }
+          });
+          
+          // Gỡ sự kiện cũ tránh trùng lặp trước khi gán sự kiện mới
+          const btnSave = document.getElementById(`btn-save-relay${i}`);
+          const newBtnSave = btnSave.cloneNode(true);
+          btnSave.parentNode.replaceChild(newBtnSave, btnSave);
+          newBtnSave.addEventListener('click', () => saveDeviceConfig(i));
+      }
+
+      // Lắng nghe trạng thái bật/tắt của Relay điều khiển
+      onValue(ref(db, `devices/${currentDeviceId}/DieuKhien`), (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+              for (let i = 1; i <= 4; i++) {
+                  const val = data[`ThietBi${i}`] ?? 0;
+                  const status = (typeof val === "object" && val !== null) ? val.TrangThai : val;
+                  const config = data[`ThietBi${i}_Config`];
+                  
+                  const switchEl = document.getElementById(`switch-relay${i}`);
+                  const labelEl = document.getElementById(`label-relay${i}`);
+                  const deviceName = config ? config.Name : `TB ${i}`;
+                  const currentMode = config ? config.Mode : "Manual";
+                  
+                  labelEl.innerText = `${deviceName || 'TB ' + i}: ${status === 1 ? "ON" : "OFF"}`;
+                  labelEl.style.color = status === 1 ? "#4caf50" : "#ccc";
+                  switchEl.checked = (status === 1);
+                  
+                  if (currentMode === "Manual" && !isIoLocked) {
+                      switchEl.disabled = false;
+                      switchEl.style.cursor = "pointer";
+                      switchEl.parentElement.style.opacity = "1";
+                  } else {
+                      switchEl.disabled = true;
+                      switchEl.style.cursor = "not-allowed";
+                      switchEl.parentElement.style.opacity = "0.5";
+                  }
+              }
+          }
+      });
+
+      // Lắng nghe các ngưỡng cấu hình Min/Max
+      onValue(ref(db, `devices/${currentDeviceId}/CauHinh`), (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+              minTempInput.value = data.MinTemp ?? "";
+              maxTempInput.value = data.MaxTemp ?? "";
+              minHumInput.value = data.MinHum ?? "";
+              maxHumInput.value = data.MaxHum ?? "";
+              
+              configMinTemp = parseFloat(data.MinTemp) || 0;
+              configMaxTemp = parseFloat(data.MaxTemp) || 100;
+              configMinHum = parseFloat(data.MinHum) || 0;
+              configMaxHum = parseFloat(data.MaxHum) || 100;
+          }
+      });
+
+      // Lắng nghe giá trị biến Hiện Tại của kho được chọn
+      onValue(ref(db, `devices/${currentDeviceId}/HienTai`), (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+              latestTemp = data.NhietDo ?? "ERR";
+              latestHum = data.DoAm ?? "ERR";
+              lastDeviceUpdateTime = Date.now();
+          }
+      });
+
+      // Thay đổi Event Listener điều khiển thủ công gạt Switch
+      for (let i = 1; i <= 4; i++) {
+          const switchEl = document.getElementById(`switch-relay${i}`);
+          const newSwitchEl = switchEl.cloneNode(true);
+          switchEl.parentNode.replaceChild(newSwitchEl, switchEl);
+          
+          newSwitchEl.addEventListener('change', (e) => {
               const status = e.target.checked ? 1 : 0;
-              
-              // Cập nhật trạng thái Relay
-              set(ref(db, `DieuKhien/ThietBi${i}`), status);
-              
-              // Ép chế độ sang Manual để tránh việc đang ở Tự động mà không điều khiển được
-              set(ref(db, `DieuKhien/ThietBi${i}_Config/Mode`), "Manual");
-              
-              console.log(`Thiết bị ${i} đã chuyển sang ${status} và chế độ Manual`);
+              if (i === 3) {
+                  update(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi3`), { TrangThai: status });
+              } else {
+                  set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
+              }
+              set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config/Mode`), "Manual");
           });
       }
 
-      // ... đặt đoạn này vào trong hàm startFirebaseSync() ...
-
-//const btnToggleLock = document.getElementById('btn-toggle-lock');
-//let isLocked = true; // Mặc định là bị khóa
-
-btnToggleLock.addEventListener('click', async () => {
-    // 1. Nếu ĐANG KHÓA -> Người dùng muốn MỞ KHÓA -> Đòi mật khẩu
-    if (isLocked) {
-        const userPassword = prompt("Vui lòng nhập mật khẩu cấu hình ngưỡng:");
-        
-        // Nếu bấm Hủy (Cancel) thì dừng lại
-        if (userPassword === null) return; 
-
-        if (userPassword.trim() === "") {
-            alert("❌ Vui lòng không để trống mật khẩu!");
-            return;
-        }
-
-        try {
-            // Tải động hàm get từ thư viện Firebase (giống hệt code lưu mật khẩu của bạn)
-            const { get } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js");
-            const passwordRef = ref(db, 'device/config/password'); // Đúng đường dẫn trên Firebase
-            const snapshot = await get(passwordRef);
-
-            if (snapshot.exists()) {
-                const currentHashedPassword = snapshot.val();
-                
-                // Mã hóa SHA-256 mật khẩu người dùng vừa nhập bằng CryptoJS giống nút lưu
-                const hashedUserInput = CryptoJS.SHA256(userPassword).toString();
-
-                // So sánh chuỗi đã mã hóa
-                if (hashedUserInput !== currentHashedPassword) {
-                    alert("❌ Mật khẩu cấu hình không chính xác!");
-                    return; // Dừng lại, giữ nguyên trạng thái khóa
-                }
-            } else {
-                // Trường hợp Firebase chưa từng được đặt mật khẩu trước đó
-                alert("⚠️ Hệ thống chưa cấu hình mật khẩu trên Firebase. Tự động mở khóa.");
-            }
-            
-            // Nếu đúng mật khẩu -> Đổi trạng thái sang MỞ KHÓA
-            isLocked = false;
-            alert("🔓 Mở khóa thành công! Bạn có thể chỉnh sửa ngưỡng.");
-
-        } catch (error) {
-            console.error("Lỗi xác thực Firebase:", error);
-            alert("❌ Đã xảy ra lỗi khi kết nối hoặc mã hóa (F12 để xem chi tiết).");
-            return;
-        }
-    } else {
-        // 2. Nếu ĐANG MỞ KHÓA -> Người dùng bấm để KHÓA LẠI (Không cần mật khẩu)
-        isLocked = true;
-    }
-
-    // 3. Cập nhật trạng thái các ô nhập dựa trên biến của bạn
-    [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => {
-        if (el) el.disabled = isLocked;
-    });
-
-    // 4. Cập nhật chữ và màu nền hiển thị trên nút bấm
-    btnToggleLock.innerText = isLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
-    btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
-});
-
-// Hàm dùng để cập nhật trạng thái On/Off của các phần tử bên trên
-function ápDụngTrạngTháiKhóa(cardParent, locked) {
-    const ioElements = cardParent.querySelectorAll('input, select, button:not(#btn-lock-io)');
-    ioElements.forEach(el => {
-        el.disabled = locked;
-    });
-}
-
-// Chạy khóa ngay lập tức khi tải trang xong
-document.addEventListener("DOMContentLoaded", function() {
-    // Lưu ý: Đảm bảo biến btnLockIo và isIoLocked đã được định nghĩa ở phạm vi toàn cục (global) phía trên
-    if (typeof btnLockIo !== 'undefined' && btnLockIo) {
-        const cardParent = btnLockIo.closest('.control-block');
-        if (cardParent) {
-            ápDụngTrạngTháiKhóa(cardParent, isIoLocked); // Ép khóa ngay từ đầu
-        }
-    }
-});
-
-// Thêm từ khóa 'async' vào trước function để dùng được await lấy mật khẩu từ Firebase
-btnLockIo.addEventListener('click', async function() {
-    const cardParent = this.closest('.control-block'); 
-
-    // 1. Nếu ĐANG KHÓA -> Yêu cầu mật khẩu để MỞ KHÓA
-    if (isIoLocked) {
-        const userPassword = prompt("Vui lòng nhập mật khẩu điều khiển thiết bị:");
-        
-        if (userPassword === null) return; 
-
-        if (userPassword.trim() === "") {
-            alert("❌ Vui lòng không để trống mật khẩu!");
-            return;
-        }
-
-        try {
-            // Tải động hàm get từ thư viện Firebase
-            const { get } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js");
-            const passwordRef = ref(db, 'device/config/password');
-            const snapshot = await get(passwordRef);
-
-            if (snapshot.exists()) {
-                const currentHashedPassword = snapshot.val();
-                // Băm mật khẩu người dùng nhập
-                const hashedUserInput = CryptoJS.SHA256(userPassword).toString();
-
-                if (hashedUserInput !== currentHashedPassword) {
-                    alert("❌ Mật khẩu không chính xác! Không thể điều khiển.");
-                    return; 
-                }
-            } else {
-                alert("⚠️ Hệ thống chưa cấu hình mật khẩu trên Firebase. Tự động mở khóa.");
-            }
-            
-            isIoLocked = false;
-            alert("🔓 Mở khóa thành công!");
-
-        } catch (error) {
-            console.error("Lỗi xác thực:", error);
-            alert("❌ Đã xảy ra lỗi xác thực (F12 để xem chi tiết).");
-            return;
-        }
-    } else {
-        // 2. Nếu ĐANG MỞ KHÓA -> Bấm để KHÓA LẠI
-        isIoLocked = true;
-    }
-
-    // 3. Áp dụng trạng thái khóa lên các switch/button con
-    if (cardParent) {
-        ápDụngTrạngTháiKhóa(cardParent, isIoLocked);
-    }
-
-    // 4. Đổi chữ và màu nền nút
-    this.innerText = isIoLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
-    this.style.background = isIoLocked ? "#555" : "#f44336";
-});
-
-// --- ĐOẠN XỬ LÝ KHI VỪA TẢI TRANG XONG ---
-// Tìm thẻ cha và ép tất cả các ô nhập liệu phải KHÓA ngay lập tức, không kích hoạt click giả nữa
-const cardParentOnLoad = btnLockIo.closest('.control-block');
-if (cardParentOnLoad) {
-    ápDụngTrạngTháiKhóa(cardParentOnLoad, true); 
-}
-// Đảm bảo nút hiển thị đúng chữ "MỞ KHÓA CHỈNH SỬA" màu xám lúc ban đầu
-btnLockIo.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
-btnLockIo.style.background = "#555";
-
-// Cập nhật lại sự kiện nhấn nút Lưu cấu hình
-btnSaveConfig.addEventListener('click', () => {
-    set(ref(db, 'CauHinh'), {
-        MinTemp: parseFloat(minTempInput.value) || 0,
-        MaxTemp: parseFloat(maxTempInput.value) || 0,
-        MinHum: parseInt(minHumInput.value) || 0,
-        MaxHum: parseInt(maxHumInput.value) || 0
-    }).then(() => {
-        alert("✅ Đã lưu cấu hình!");
-        // Sau khi lưu xong thì TỰ ĐỘNG KHÓA LẠI
-        isLocked = true;
-        [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => el.disabled = true);
-        btnToggleLock.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
-        btnToggleLock.style.background = "#555";
-    }).catch(e => alert("Lỗi: " + e.message));
-});
-
-      // Lịch sử & Excel
+      // Load dữ liệu biểu đồ ban đầu
       loadDataByDate(datePicker.value);
-      datePicker.addEventListener('change', (e) => loadDataByDate(e.target.value));
   }
 
+  // --- TRÌNH DIỄN THÔNG SỐ VÀ CẢNH BÁO MỖI 2 GIÂY ---
+  setInterval(() => {
+      if (!currentDeviceId) return; // Chỉ chạy khi đã vào xem chi tiết kho cụ thể
+
+      const now = Date.now();
+      const timeSinceLastUpdate = now - lastDeviceUpdateTime;
+
+      if (lastDeviceUpdateTime === 0 || timeSinceLastUpdate > 15000) {
+          tempElement.innerText = "-";
+          humElement.innerText = "-";
+          statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ MẤT KẾT NỐI ESP32!`;
+          alertDisplay.innerText = "⚠️ ESP32 ĐANG NGOẠI TUYẾN (OFFLINE)!";
+          alertDisplay.style.color = "#ff5722";
+          return;
+      }
+
+      if (latestTemp === "ERR" || latestTemp === "No Signal") {
+          tempElement.innerText = "LỖI";
+          humElement.innerText = "LỖI";
+          statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> ❌ Lỗi cảm biến!`;
+          alertDisplay.innerText = "⚠️ CẢM BIẾN KHÔNG ĐỌC ĐƯỢC DỮ LIỆU!";
+          alertDisplay.style.color = "#ff5722";
+      } else {
+          tempElement.innerText = latestTemp + "°C";
+          humElement.innerText = latestHum + "%";
+          statusText.innerHTML = `<span class="dot" id="status-dot"></span> Đã đồng bộ thành công!`;
+          
+          const valT = parseFloat(latestTemp), valH = parseFloat(latestHum);
+          let msgT = (valT > configMaxTemp) ? "Nhiệt độ CAO" : ((valT < configMinTemp) ? "Nhiệt độ THẤP" : "Nhiệt độ BÌNH THƯỜNG");
+          let msgH = (valH > configMaxHum) ? "Độ ẩm CAO" : ((valH < configMinHum) ? "Độ ẩm THẤP" : "Độ ẩm BÌNH THƯỜNG");
+          
+          alertDisplay.innerText = msgT + " | " + msgH;
+          alertDisplay.style.color = (msgT.includes("BÌNH THƯỜNG") && msgH.includes("BÌNH THƯỜNG")) ? "#4caf50" : "#ff5722";
+      }
+  }, 2000);
+
+  // --- XỬ LÝ KHÓA / MỞ KHÓA NGƯỠNG CẤU HÌNH CÓ XÁC THỰC MẬT KHẨU TỪNG THIẾT BỊ ---
+  btnToggleLock.addEventListener('click', async () => {
+      if (isLocked) {
+          const userPassword = prompt("Vui lòng nhập mật khẩu cấu hình ngưỡng:");
+          if (userPassword === null) return; 
+          if (userPassword.trim() === "") { alert("❌ Vui lòng không để trống mật khẩu!"); return; }
+
+          try {
+              const passwordRef = ref(db, `devices/${currentDeviceId}/device/config/password`); 
+              const snapshot = await get(passwordRef);
+
+              if (snapshot.exists()) {
+                  const hashedUserInput = CryptoJS.SHA256(userPassword).toString();
+                  if (hashedUserInput !== snapshot.val()) {
+                      alert("❌ Mật khẩu cấu hình không chính xác!");
+                      return;
+                  }
+              } else {
+                  alert("⚠️ Hệ thống chưa cấu hình mật khẩu trên Firebase. Tự động mở khóa.");
+              }
+              isLocked = false;
+              alert("🔓 Mở khóa thành công! Bạn có thể chỉnh sửa ngưỡng.");
+          } catch (error) {
+              alert("❌ Đã xảy ra lỗi xác thực.");
+              return;
+          }
+      } else {
+          isLocked = true;
+      }
+
+      [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => { if (el) el.disabled = isLocked; });
+      btnToggleLock.innerText = isLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
+      btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
+  });
+
+  function ápDụngTrạngTháiKhóa(cardParent, locked) {
+      const ioElements = cardParent.querySelectorAll('input, select, button:not(#btn-lock-io)');
+      ioElements.forEach(el => { el.disabled = locked; });
+  }
+
+  btnLockIo.addEventListener('click', async function() {
+      const cardParent = this.closest('.control-block'); 
+      if (isIoLocked) {
+          const userPassword = prompt("Vui lòng nhập mật khẩu điều khiển thiết bị:");
+          if (userPassword === null) return; 
+          if (userPassword.trim() === "") { alert("❌ Vui lòng không để trống mật khẩu!"); return; }
+
+          try {
+              const passwordRef = ref(db, `devices/${currentDeviceId}/device/config/password`);
+              const snapshot = await get(passwordRef);
+
+              if (snapshot.exists()) {
+                  const hashedUserInput = CryptoJS.SHA256(userPassword).toString();
+                  if (hashedUserInput !== snapshot.val()) {
+                      alert("❌ Mật khẩu không chính xác! Không thể điều khiển.");
+                      return; 
+                  }
+              } else {
+                  alert("⚠️ Hệ thống chưa cấu hình mật khẩu trên Firebase. Tự động mở khóa.");
+              }
+              isIoLocked = false;
+              alert("🔓 Mở khóa thành công!");
+          } catch (error) {
+              return;
+          }
+      } else {
+          isIoLocked = true;
+      }
+
+      if (cardParent) ápDụngTrạngTháiKhóa(cardParent, isIoLocked);
+      this.innerText = isIoLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
+      this.style.background = isIoLocked ? "#555" : "#f44336";
+  });
+
+  btnSaveConfig.addEventListener('click', () => {
+      set(ref(db, `devices/${currentDeviceId}/CauHinh`), {
+          MinTemp: parseFloat(minTempInput.value) || 0,
+          MaxTemp: parseFloat(maxTempInput.value) || 0,
+          MinHum: parseInt(minHumInput.value) || 0,
+          MaxHum: parseInt(maxHumInput.value) || 0
+      }).then(() => {
+          alert("✅ Đã lưu cấu hình!");
+          isLocked = true;
+          [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => el.disabled = true);
+          btnToggleLock.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
+          btnToggleLock.style.background = "#555";
+      }).catch(e => alert("Lỗi: " + e.message));
+  });
+
+  // --- TRUY XUẤT LỊCH SỬ LOGS & BIỂU ĐỒ HOẠT ĐỘNG ---
+  // Hỗ trợ gỡ và tạo lại sự kiện cho bộ chọn ngày tránh xung đột thiết bị
+  const newDatePicker = datePicker.cloneNode(true);
+  datePicker.parentNode.replaceChild(newDatePicker, datePicker);
+  newDatePicker.addEventListener('change', (e) => loadDataByDate(e.target.value));
+
   function loadDataByDate(htmlTargetDate) {
+      if (!currentDeviceId) return;
       const parts = htmlTargetDate.split('-');
       const formattedTargetDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
 
-      onValue(ref(db, 'LichSu'), (snapshot) => {
+      // Đọc lịch sử lưu trữ của riêng kho được chọn tại node: devices/[id]/LichSu
+      onValue(ref(db, `devices/${currentDeviceId}/LichSu`), (snapshot) => {
           tempChart.data.labels = []; tempChart.data.datasets[0].data = [];
           humChart.data.labels = []; humChart.data.datasets[0].data = [];
           excelRawData = []; 
@@ -1129,23 +1111,20 @@ btnSaveConfig.addEventListener('click', () => {
   }
 
   document.getElementById('btn-download').addEventListener('click', () => {
+      if(excelRawData.length === 0) { alert("Không có dữ liệu lịch sử trong ngày được chọn để xuất!"); return; }
       const worksheet = XLSX.utils.json_to_sheet(excelRawData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, `DuLieu`);
-      XLSX.writeFile(workbook, `BaoCao.xlsx`);
+      XLSX.writeFile(workbook, `BaoCao_${currentDeviceId}.xlsx`);
   });
 
-  // Khởi động login
-  document.getElementById('btn-login').addEventListener('click', () => {
-      signInWithEmailAndPassword(auth, document.getElementById('username').value, document.getElementById('password').value)
-          .then(() => {
-              document.getElementById('login-overlay').style.display = 'none';
-              document.getElementById('main-container').style.display = 'block';
-              startFirebaseSync();
-          })
-          .catch(() => document.getElementById('error-msg').style.display = 'block');
+  // Ép trạng thái khóa IO khi tải trang
+  document.addEventListener("DOMContentLoaded", function() {
+      const cardParentOnLoad = btnLockIo.closest('.control-block');
+      if (cardParentOnLoad) { ápDụngTrạngTháiKhóa(cardParentOnLoad, true); }
+      btnLockIo.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
+      btnLockIo.style.background = "#555";
   });
-
 </script>
 </body>
 </html> 
