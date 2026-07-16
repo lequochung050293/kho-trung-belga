@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -618,7 +619,6 @@
 
 
 
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
@@ -752,7 +752,17 @@ document.getElementById('btn-login').addEventListener('click', () => {
         });
 });
 
-  // --- TRANG HIỂN THỊ DANH SÁCH KHO TRỨNG ---
+
+
+
+
+
+
+
+
+
+
+// --- TRANG HIỂN THỊ DANH SÁCH KHO TRỨNG ---
 function hienThiDanhSachKho() {
     document.getElementById('main-container').style.display = 'none';
     deviceSelectionPage.style.display = 'block';
@@ -778,24 +788,52 @@ function hienThiDanhSachKho() {
                 const t = item.HienTai?.NhietDo ?? "--";
                 const h = item.HienTai?.DoAm ?? "--";
 
+                // Đọc trực tiếp từ nhánh TenThietBi trên Firebase
+                // Nếu chưa có (trống), hiển thị chữ "(Chưa đặt tên khu vực)" màu xám nhẹ
+                const tenKhuVuc = item.TenThietBi && item.TenThietBi.trim() !== "" 
+                                  ? item.TenThietBi 
+                                  : "<span style='color: #555; font-style: italic;'>(Chưa đặt tên khu vực)</span>";
+
+                // Đọc mật khẩu XÓA từ nhánh matkhauthietbi/password để hiển thị icon khóa
+                const deletePassword = item.device?.matkhauthietbi?.password;
+                const hasDeletePassword = (deletePassword && deletePassword.trim() !== "");
+                const lockIcon = hasDeletePassword ? "🔒" : "🔑";
+
                 const card = document.createElement('div');
-                // Thêm position: relative để căn nút xóa ở góc phải thẻ card
                 card.style.cssText = "background: #252525; padding: 20px; border-radius: 12px; border-left: 5px solid #00adb5; text-align: left; cursor: pointer; transition: 0.2s; position: relative;";
+                
+                // Giao diện thẻ: Hiển thị ID thiết bị làm tiêu đề chính, 
+                // và hiển thị thêm dòng "Khu vực" lấy trực tiếp từ nhánh TenThietBi của Firebase
                 card.innerHTML = `
-                    <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; padding-right: 35px;">💻 ${id}</h3>
+                    <!-- Tiêu đề thẻ hiển thị ID Thiết Bị -->
+                    <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; padding-right: 45px;">
+                        💻 ${id.toUpperCase()}
+                    </h3>
+                    
+                    <!-- Dòng hiển thị TÊN KHU VỰC / KHO GIÁM SÁT lấy từ nhánh TenThietBi trên Firebase -->
+                    <p style="margin: 5px 0 12px 0; color: #aaa; font-size: 14px;">
+                        📍 Khu vực: <b style="color: #00adb5;">${tenKhuVuc}</b>
+                    </p>
+                    
+                    <!-- Thông số đo đạc thực tế -->
                     <p style="margin: 5px 0; color: #aaa;">Nhiệt độ: <b style="color: #ff5722;">${t}°C</b></p>
                     <p style="margin: 5px 0; color: #aaa;">Độ ẩm: <b style="color: #00bcd4;">${h}%</b></p>
                     
-                    <!-- Nút Xóa Thiết Bị -->
-                    <button class="btn-delete-device" style="position: absolute; top: 15px; right: 15px; background: #d32f2f; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="Xóa thiết bị">
-                        🗑️
-                    </button>
+                    <!-- Cụm nút Thao tác (Xóa & Khóa xóa) ở góc phải -->
+                    <div style="position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 8px; align-items: center;">
+                        <button class="btn-delete-device" style="background: #d32f2f; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="Xóa thiết bị">
+                            🗑️
+                        </button>
+                        <button class="btn-lock-device" style="background: #424242; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="${hasDeletePassword ? 'Nút xóa đang được khóa (Nhấn để mở khóa)' : 'Nút xóa chưa khóa (Nhấn để khóa)'}">
+                            ${lockIcon}
+                        </button>
+                    </div>
                 `;
                 
                 card.onmouseover = () => card.style.background = "#2d2d2d";
                 card.onmouseout = () => card.style.background = "#252525";
                 
-                // Sự kiện chọn thiết bị
+                // Sự kiện click chọn thiết bị để vào trang chi tiết
                 card.addEventListener('click', () => {
                     currentDeviceId = id;
                     deviceSelectionPage.style.display = 'none';
@@ -803,50 +841,148 @@ function hienThiDanhSachKho() {
                     startFirebaseSync();
                 });
 
-                // Xử lý sự kiện click riêng cho nút Xóa
+                // Sự kiện nút Xóa
                 const deleteBtn = card.querySelector('.btn-delete-device');
                 deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Chặn sự kiện click lan ra thẻ cha (không bị nhảy vào trang chi tiết)
-                    xoaThietBi(id);
+                    e.stopPropagation();
+                    xoaThietBiBaoMat(id, deletePassword);
                 });
-
-                // Hiệu ứng hover đổi màu cho nút xóa sinh động hơn
                 deleteBtn.onmouseover = () => deleteBtn.style.background = "#b71c1c";
                 deleteBtn.onmouseout = () => deleteBtn.style.background = "#d32f2f";
+
+                // Sự kiện nút Khóa/Mở khóa nút Xóa
+                const lockBtn = card.querySelector('.btn-lock-device');
+                lockBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    thietLapHoacMoKhoa(id, deletePassword);
+                });
+                lockBtn.onmouseover = () => lockBtn.style.background = "#616161";
+                lockBtn.onmouseout = () => lockBtn.style.background = "#424242";
 
                 grid.appendChild(card);
             });
         }
     });
 
-    // Sự kiện Tạo thêm thiết bị mới
-    document.getElementById('btn-add-new-device').addEventListener('click', () => {
+    // Sự kiện Tạo thêm thiết bị mới (Đã được nâng cấp để chống trùng tên và ghi đè)
+    document.getElementById('btn-add-new-device').addEventListener('click', async () => {
         const deviceIdInput = prompt("Nhập mã thiết bị mới (Ví dụ: device2, device3 - viết liền không dấu):");
         if (!deviceIdInput) return;
+        
         const formatId = deviceIdInput.trim().toLowerCase();
+        if (formatId === "") {
+            alert("❌ Tên thiết bị không được để trống!");
+            return;
+        }
 
-        // Thiết lập cấu trúc dữ liệu mặc định chuẩn hóa cho kho mới (Tất cả về giá trị mặc định rỗng/0)
-        set(ref(db, `devices/${formatId}`), {
-            TenThietBi: formatId.toUpperCase(),
-            CauHinh: { MaxHum: "", MaxTemp: "", MinHum: "", MinTemp: "" },
-            HienTai: { DoAm: "", NhietDo: "", ThoiGian: "" },
-            DieuKhien: {
-                ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
-                ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
-                ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }, 
-                ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }
-            },
-            device: { config: { password: "" } } 
-        }).then(() => {
-            alert(`Tạo thiết bị [${formatId}] thành công với cấu hình trống mặc định!`);
-        }).catch(e => alert("Lỗi tạo: " + e.message));
+        try {
+            // 1. Tham chiếu đến node của thiết bị muốn tạo trên Firebase
+            const deviceRef = ref(db, `devices/${formatId}`);
+            
+            // 2. Đọc dữ liệu hiện tại để kiểm tra xem thiết bị đã tồn tại chưa
+            const snapshot = await get(deviceRef);
+
+            if (snapshot.exists()) {
+                // Nếu đã tồn tại thiết bị trùng ID -> Cảnh báo và chặn không cho tạo
+                alert(`❌ Lỗi: Thiết bị có tên [${formatId.toUpperCase()}] đã tồn tại trong hệ thống!\nVui lòng đặt một tên khác để tránh ghi đè dữ liệu.`);
+                return; 
+            }
+
+            // 3. Nếu chưa tồn tại trùng tên -> Tiến hành khởi tạo dữ liệu mặc định an toàn
+            await set(deviceRef, {
+                TenThietBi: formatId.toUpperCase(),
+                CauHinh: { MaxHum: "", MaxTemp: "", MinHum: "", MinTemp: "" },
+                HienTai: { DoAm: "", NhietDo: "", ThoiGian: "" },
+                DieuKhien: {
+                    ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
+                    ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
+                    ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }, 
+                    ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }
+                },
+                device: { 
+                    config: { password: "" }, // Mật khẩu quản lý cấu hình mặc định trống
+                    matkhauthietbi: { password: "" } // Mật khẩu bảo vệ nút xóa mặc định trống
+                } 
+            });
+
+            alert(`🎉 Tạo thiết bị [${formatId.toUpperCase()}] thành công với cấu hình mặc định!`);
+
+        } catch (error) {
+            console.error("Lỗi tạo thiết bị:", error);
+            alert("❌ Lỗi hệ thống: " + error.message);
+        }
     });
 }
 
-// --- HÀM XỬ LÝ XÓA THIẾT BỊ TRÊN FIREBASE ---
-function xoaThietBi(id) {
+// --- HÀM XỬ LÝ KHÓA / ĐẶT MẬT KHẨU CHO NÚT XÓA ---
+function thietLapHoacMoKhoa(id, encodedPassword) {
+    const hasPassword = (encodedPassword && encodedPassword.trim() !== "");
+
+    if (!hasPassword) {
+        // Trường hợp 1: Thiết bị chưa được cài mật khẩu khóa xóa -> Tạo mới mật khẩu khóa xóa
+        const passwordInput = prompt(`[THIẾT LẬP] Nhập mật khẩu để KHÓA chức năng xóa thiết bị [ ${id.toUpperCase()} ] :`);
+        if (!passwordInput) return; // Nhấn Hủy
+
+        const cleanPass = passwordInput.trim();
+        if (cleanPass === "") {
+            alert("❌ Mật khẩu bảo vệ không được phép để trống!");
+            return;
+        }
+
+        // Mã hóa SHA256 mật khẩu xóa trước khi lưu
+        const encryptedPass = CryptoJS.SHA256(cleanPass).toString();
+
+        // Lưu mật khẩu xóa vào đúng nhánh: device/matkhauthietbi/password
+        set(ref(db, `devices/${id}/device/matkhauthietbi/password`), encryptedPass)
+            .then(() => {
+                alert(`🔒 Đã khóa bảo vệ nút xóa thiết bị [ ${id.toUpperCase()} ] thành công!`);
+            })
+            .catch(error => {
+                console.error("Lỗi khóa:", error);
+                alert("Lỗi kết nối Firebase!");
+            });
+    } else {
+        // Trường hợp 2: Đã có mật khẩu khóa xóa -> Nhập đúng để gỡ bỏ (Reset mật khẩu xóa thành "")
+        const passwordInput = prompt(`[MỞ KHÓA] Nhập mật khẩu hiện tại để gỡ khóa bảo mật nút xóa thiết bị [ ${id.toUpperCase()} ] :`);
+        if (!passwordInput) return;
+
+        const encryptedInput = CryptoJS.SHA256(passwordInput.trim()).toString();
+
+        if (encryptedInput === encodedPassword) {
+            // Đặt mật khẩu xóa về rỗng
+            set(ref(db, `devices/${id}/device/matkhauthietbi/password`), "")
+                .then(() => {
+                    alert(`🔑 Đã gỡ bỏ mật khẩu bảo vệ. Bạn có thể xóa thiết bị [ ${id.toUpperCase()} ] mà không cần xác thực!`);
+                })
+                .catch(error => {
+                    console.error("Lỗi gỡ khóa:", error);
+                    alert("Lỗi kết nối Firebase!");
+                });
+        } else {
+            alert("❌ Mật khẩu nhập vào không chính xác! Thao tác mở khóa bị từ chối.");
+        }
+    }
+}
+
+// --- HÀM XỬ LÝ XÓA THIẾT BỊ TRÊN FIREBASE (CÓ BẢO MẬT) ---
+function xoaThietBiBaoMat(id, encodedPassword) {
+    const hasPassword = (encodedPassword && encodedPassword.trim() !== "");
+
+    if (hasPassword) {
+        // Yêu cầu xác thực mật khẩu bảo vệ nút xóa trước khi cho phép xóa
+        const passwordInput = prompt(`🛡️ [BẢO MẬT XÓA] Thiết bị [ ${id.toUpperCase()} ] đang được KHÓA.\nĐể kích hoạt nút xóa, vui lòng nhập mật khẩu:`);
+        if (!passwordInput) return; // Người dùng nhấn Hủy
+
+        const encryptedInput = CryptoJS.SHA256(passwordInput.trim()).toString();
+
+        if (encryptedInput !== encodedPassword) {
+            alert("❌ Mật khẩu bảo vệ nút xóa không đúng! Thao tác xóa bị từ chối.");
+            return; // Dừng lại không thực hiện lệnh xóa
+        }
+    }
+
+    // Nếu không có mật khẩu bảo vệ HOẶC nhập chính xác mật khẩu thì tiến hành bước xóa
     if (confirm(`⚠️ CẢNH BÁO: Bạn có chắc chắn muốn xóa vĩnh viễn thiết bị [ ${id.toUpperCase()} ] khỏi hệ thống Bel Gà không? Data đã xóa sẽ không thể khôi phục.`)) {
-        // Thực hiện xóa node của thiết bị đó trên Firebase Realtime Database
         remove(ref(db, `devices/${id}`))
             .then(() => {
                 alert(`Đã xóa thiết bị ${id} thành công!`);
@@ -858,7 +994,12 @@ function xoaThietBi(id) {
     }
 }
 
-  // --- ĐỔI MẬT KHẨU CHO RIÊNG TỪNG THIẾT BỊ ---
+
+
+
+
+
+  // --- ĐỔI MẬT KHẨU CẤU HÌNH CHO RIÊNG TỪNG THIẾT BỊ ---
   document.getElementById('btn-set-password').addEventListener('click', async () => {
       const oldPasswordInput = document.getElementById('old-password').value;
       const newPasswordInput = document.getElementById('new-password').value;
@@ -872,7 +1013,7 @@ function xoaThietBi(id) {
 
       try {
           const snapshot = await get(passwordRef);
-          if (snapshot.exists()) {
+          if (snapshot.exists() && snapshot.val() !== "") {
               if (!oldPasswordInput) { alert("Hệ thống đã có mật khẩu, vui lòng nhập Mật khẩu cũ!"); return; }
               if (hashedOldInput !== snapshot.val()) { alert("Mật khẩu cũ không chính xác!"); return; }
           } 
@@ -884,7 +1025,6 @@ function xoaThietBi(id) {
           alert("Lỗi Firebase: " + error.message);
       }
   });
-
 // --- LƯU CẤU HÌNH THIẾT BỊ CÓ PHÂN NHÁNH ---
   function saveDeviceConfig(i) {
       const name = document.getElementById(`name-relay${i}`).value;
