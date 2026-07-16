@@ -785,8 +785,43 @@ function hienThiDanhSachKho() {
             const devicesData = snapshot.val();
             Object.keys(devicesData).forEach(id => {
                 const item = devicesData[id];
-                const t = item.HienTai?.NhietDo ?? "--";
-                const h = item.HienTai?.DoAm ?? "--";
+                
+                // 1. Lấy thông số đo đạc và mốc thời gian cập nhật của thiết bị
+                const rawT = item.HienTai?.NhietDo;
+                const rawH = item.HienTai?.DoAm;
+                const thoiGianCapNhat = item.HienTai?.ThoiGian; 
+
+                let t = "Err";
+                let h = "Err";
+                let tColor = "#ff5722"; // Màu cam đỏ mặc định của nhiệt độ
+                let hColor = "#00bcd4"; // Màu xanh mặc định của độ ẩm
+
+                if (thoiGianCapNhat && rawT !== undefined && rawH !== undefined && rawT !== "" && rawH !== "") {
+                    // Chuyển đổi chuỗi định dạng "YYYY-MM-DD HH:mm:ss" thành đối tượng Date tương thích đa trình duyệt
+                    const thoiGianEsp = new Date(thoiGianCapNhat.replace(/-/g, '/')); 
+                    const thoiGianHienTai = new Date();
+
+                    // Tính khoảng lệch thời gian thực tế (mili giây)
+                    const doLechThoiGian = Math.abs(thoiGianHienTai - thoiGianEsp);
+
+                    // Nếu thiết bị gửi tín hiệu mới trong vòng dưới 3 phút (180000 ms)
+                    if (doLechThoiGian < 180000) { 
+                        t = `${rawT}°C`;
+                        h = `${rawH}%`;
+                    } else {
+                        // Quá 3 phút không phản hồi -> Coi như mất kết nối (Offline)
+                        t = "Err";
+                        h = "Err";
+                        tColor = "#d32f2f"; // Chuyển chữ "Err" sang màu đỏ cảnh báo
+                        hColor = "#d32f2f";
+                    }
+                } else {
+                    // Trường hợp chưa từng có dữ liệu hoặc dữ liệu trống rỗng
+                    t = "Err";
+                    h = "Err";
+                    tColor = "#d32f2f";
+                    hColor = "#d32f2f";
+                }
 
                 // Đọc trực tiếp từ nhánh TenThietBi trên Firebase
                 // Nếu chưa có (trống), hiển thị chữ "(Chưa đặt tên khu vực)" màu xám nhẹ
@@ -802,8 +837,7 @@ function hienThiDanhSachKho() {
                 const card = document.createElement('div');
                 card.style.cssText = "background: #252525; padding: 20px; border-radius: 12px; border-left: 5px solid #00adb5; text-align: left; cursor: pointer; transition: 0.2s; position: relative;";
                 
-                // Giao diện thẻ: Hiển thị ID thiết bị làm tiêu đề chính, 
-                // và hiển thị thêm dòng "Khu vực" lấy trực tiếp từ nhánh TenThietBi của Firebase
+                // Giao diện thẻ: Đã tích hợp cấu trúc màu sắc và dữ liệu Err động
                 card.innerHTML = `
                     <!-- Tiêu đề thẻ hiển thị ID Thiết Bị -->
                     <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; padding-right: 45px;">
@@ -816,8 +850,8 @@ function hienThiDanhSachKho() {
                     </p>
                     
                     <!-- Thông số đo đạc thực tế -->
-                    <p style="margin: 5px 0; color: #aaa;">Nhiệt độ: <b style="color: #ff5722;">${t}°C</b></p>
-                    <p style="margin: 5px 0; color: #aaa;">Độ ẩm: <b style="color: #00bcd4;">${h}%</b></p>
+                    <p style="margin: 5px 0; color: #aaa;">Nhiệt độ: <b style="color: ${tColor};">${t}</b></p>
+                    <p style="margin: 5px 0; color: #aaa;">Độ ẩm: <b style="color: ${hColor};">${h}</b></p>
                     
                     <!-- Cụm nút Thao tác (Xóa & Khóa xóa) ở góc phải -->
                     <div style="position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 8px; align-items: center;">
@@ -890,7 +924,7 @@ function hienThiDanhSachKho() {
 
             // 3. Nếu chưa tồn tại trùng tên -> Tiến hành khởi tạo dữ liệu mặc định an toàn
             await set(deviceRef, {
-               TenThietBi: "", // Đổi từ "formatId.toUpperCase()" thành "" để để trống tên khu vực ban đầu
+                TenThietBi: "", // Khởi tạo trống tên khu vực
                 CauHinh: { MaxHum: "", MaxTemp: "", MinHum: "", MinTemp: "" },
                 HienTai: { DoAm: "", NhietDo: "", ThoiGian: "" },
                 DieuKhien: {
@@ -913,6 +947,11 @@ function hienThiDanhSachKho() {
         }
     });
 }
+
+
+
+
+
 
 // --- HÀM XỬ LÝ KHÓA / ĐẶT MẬT KHẨU CHO NÚT XÓA ---
 function thietLapHoacMoKhoa(id, encodedPassword) {
@@ -1239,6 +1278,16 @@ function xoaThietBiBaoMat(id, encodedPassword) {
       }
   }, 2000);
 
+
+
+
+
+
+
+
+
+
+
   // --- XỬ LÝ KHÓA / MỞ KHÓA NGƯỠNG CẤU HÌNH CÓ XÁC THỰC MẬT KHẨU TỪNG THIẾT BỊ ---
   btnToggleLock.addEventListener('click', async () => {
       if (isLocked) {
@@ -1328,6 +1377,11 @@ function xoaThietBiBaoMat(id, encodedPassword) {
       }).catch(e => alert("Lỗi: " + e.message));
   });
 
+
+
+
+
+
   // --- TRUY XUẤT LỊCH SỬ LOGS & BIỂU ĐỒ HOẠT ĐỘNG ---
   // Hỗ trợ gỡ và tạo lại sự kiện cho bộ chọn ngày tránh xung đột thiết bị
   const newDatePicker = datePicker.cloneNode(true);
@@ -1368,6 +1422,12 @@ function xoaThietBiBaoMat(id, encodedPassword) {
           tempChart.update(); humChart.update();
       });
   }
+
+
+
+
+
+
 
   function decodeFirebaseIdTimestamp(id) {
       const PUSH_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
