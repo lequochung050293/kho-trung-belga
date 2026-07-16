@@ -890,7 +890,7 @@ function hienThiDanhSachKho() {
 
             // 3. Nếu chưa tồn tại trùng tên -> Tiến hành khởi tạo dữ liệu mặc định an toàn
             await set(deviceRef, {
-                TenThietBi: formatId.toUpperCase(),
+               TenThietBi: "", // Đổi từ "formatId.toUpperCase()" thành "" để để trống tên khu vực ban đầu
                 CauHinh: { MaxHum: "", MaxTemp: "", MinHum: "", MinTemp: "" },
                 HienTai: { DoAm: "", NhietDo: "", ThoiGian: "" },
                 DieuKhien: {
