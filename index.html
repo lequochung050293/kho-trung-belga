@@ -809,8 +809,8 @@ function hienThiDanhSachKho() {
 
                     // Nếu thiết bị gửi tín hiệu mới trong vòng dưới 3 phút (180000 ms)
                     if (doLechThoiGian < 180000) { 
-                        t = `${rawT}°C`;
-                        h = `${rawH}%`;
+                        t = `${rawT} °C`;
+                        h = `${rawH} %`;
                     } else {
                         // Quá 3 phút không phản hồi -> Coi như mất kết nối (Offline)
                         t = "Err";
@@ -1268,8 +1268,8 @@ function xoaThietBiBaoMat(id, encodedPassword) {
           alertDisplay.innerText = "⚠️ CẢM BIẾN KHÔNG ĐỌC ĐƯỢC DỮ LIỆU!";
           alertDisplay.style.color = "#ff5722";
       } else {
-          tempElement.innerText = latestTemp + "°C";
-          humElement.innerText = latestHum + "%";
+          tempElement.innerText = latestTemp + " °C";
+          humElement.innerText = latestHum + " %";
           statusText.innerHTML = `<span class="dot" id="status-dot"></span> Đã đồng bộ thành công!`;
           
           const valT = parseFloat(latestTemp), valH = parseFloat(latestHum);
