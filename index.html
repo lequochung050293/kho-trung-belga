@@ -691,8 +691,10 @@
   deviceSelectionPage.style.cssText = "display:none; padding: 25px; max-width: 1000px; margin: 0 auto; text-align: center; color: white;";
   document.body.appendChild(deviceSelectionPage);
 
+ // --- CẬP NHẬT HÀM OPTIONS BIỂU ĐỒ HỖ TRỢ THU PHÓNG ĐIỆN THOẠI ---
   const optionsCommon = (color, titleText) => ({
-      responsive: true, maintainAspectRatio: false,
+      responsive: true, 
+      maintainAspectRatio: false,
       scales: {
           x: { grid: { color: '#2d2d2d' }, ticks: { color: '#aaa', maxTicksLimit: 10 } },
           y: { grid: { color: '#2d2d2d' }, ticks: { color: color }, title: { display: true, text: titleText, color: color } }
@@ -700,8 +702,16 @@
       plugins: { 
           legend: { labels: { color: '#fff' } },
           zoom: {
-              pan: { enabled: true, mode: 'x' },
-              zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+              pan: { 
+                  enabled: true, 
+                  mode: 'x',
+                  threshold: 10 // Độ nhạy khi vuốt lướt màn hình bằng 1 ngón tay
+              },
+              zoom: { 
+                  wheel: { enabled: true }, // Cuộn chuột phóng to trên máy tính
+                  pinch: { enabled: true }, // 💡 BẬT TÍNH NĂNG: Thu phóng 2 ngón tay trên điện thoại
+                  mode: 'x' 
+              }
           }
       }
   });
