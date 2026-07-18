@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1413,12 +1414,12 @@ function xoaThietBiBaoMat(id, encodedPassword) {
   datePicker.parentNode.replaceChild(newDatePicker, datePicker);
   newDatePicker.addEventListener('change', (e) => loadDataByDate(e.target.value));
 
+ // Tìm hàm này ở gần cuối file script để thay thế
   function loadDataByDate(htmlTargetDate) {
       if (!currentDeviceId) return;
       const parts = htmlTargetDate.split('-');
       const formattedTargetDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
 
-      // Đọc lịch sử lưu trữ của riêng kho được chọn tại node: devices/[id]/LichSu
       onValue(ref(db, `devices/${currentDeviceId}/LichSu`), (snapshot) => {
           tempChart.data.labels = []; tempChart.data.datasets[0].data = [];
           humChart.data.labels = []; humChart.data.datasets[0].data = [];
@@ -1429,17 +1430,27 @@ function xoaThietBiBaoMat(id, encodedPassword) {
               let count = 1;
               Object.keys(data).forEach((key) => {
                   const item = data[key];
-                  if(item.NhietDo !== undefined && item.DoAm !== undefined) {
-                      let recordDateTime = item.ThoiGian ? new Date(item.ThoiGian) : decodeFirebaseIdTimestamp(key);
+                  
+                  // CHUYỂN ĐỔI GIÁ TRỊ SANG SỐ ĐỂ KIỂM TRA CHÍNH XÁC
+                  const checkT = parseFloat(item.NhietDo);
+                  const checkH = parseFloat(item.DoAm);
+
+                  // BỘ LỌC NÂNG CẤP: Loại bỏ hoàn toàn chữ "ERR", dữ liệu trống, hoặc số 0 nhiễu
+                  if(item.NhietDo !== undefined && item.DoAm !== undefined && 
+                     item.NhietDo !== "ERR" && item.DoAm !== "ERR" && 
+                     !isNaN(checkT) && !isNaN(checkH) && 
+                     checkT !== 0 && checkH !== 0) {
+                      
+                      let recordDateTime = item.ThoiGian ? new Date(item.ThoiGian.replace(/-/g, '/')) : decodeFirebaseIdTimestamp(key);
                       const recordDateStr = String(recordDateTime.getDate()).padStart(2, '0') + '/' + String(recordDateTime.getMonth() + 1).padStart(2, '0') + '/' + recordDateTime.getFullYear();
                       
                       if (recordDateStr === formattedTargetDate) {
                           const timeLabel = String(recordDateTime.getHours()).padStart(2, '0') + ':' + String(recordDateTime.getMinutes()).padStart(2, '0');
                           tempChart.data.labels.push(timeLabel);
-                          tempChart.data.datasets[0].data.push(Number(item.NhietDo));
+                          tempChart.data.datasets[0].data.push(checkT);
                           humChart.data.labels.push(timeLabel);
-                          humChart.data.datasets[0].data.push(Number(item.DoAm));
-                          excelRawData.push({"STT": count++, "Thời Gian": recordDateStr + " " + timeLabel, "Nhiệt Độ (°C)": Number(item.NhietDo), "Độ Ẩm (%)": Number(item.DoAm)});
+                          humChart.data.datasets[0].data.push(checkH);
+                          excelRawData.push({"STT": count++, "Thời Gian": recordDateStr + " " + timeLabel, "Nhiệt Độ (°C)": checkT, "Độ Ẩm (%)": checkH});
                       }
                   }
               });
