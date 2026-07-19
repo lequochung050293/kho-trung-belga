@@ -689,7 +689,6 @@
   let configMinTemp = 0, configMaxTemp = 100;
   let configMinHum = 0, configMaxHum = 100;
     
-  // 💡 CẬP NHẬT: Lưu chuỗi thời gian thực tế từ ESP32 thay vì biến đếm thời gian máy tính
   let latestTimeStr = ""; 
   let latestTemp = "No Signal";
   let latestHum = "No Signal";
@@ -756,7 +755,6 @@
           });
   });
 
- // --- TRANG HIỂN THỊ DANH SÁCH KHO TRỨNG ---
 function hienThiDanhSachKho() {
     document.getElementById('main-container').style.display = 'none';
     deviceSelectionPage.style.display = 'block';
@@ -769,7 +767,6 @@ function hienThiDanhSachKho() {
         </button>
     `;
 
-    // Lắng nghe danh sách từ node "devices" trên Firebase
     onValue(ref(db, 'devices'), (snapshot) => {
         const grid = document.getElementById('device-grid');
         if (!grid) return;
@@ -780,15 +777,13 @@ function hienThiDanhSachKho() {
             Object.keys(devicesData).forEach(id => {
                 const item = devicesData[id];
                 
-                // Lấy thông số đo đạc và mốc thời gian cập nhật của thiết bị
                 const rawT = item.HienTai?.NhietDo;
                 const rawH = item.HienTai?.DoAm;
                 const thoiGianCapNhat = item.HienTai?.ThoiGian; 
 
-                // Giá trị mặc định ban đầu nếu có lỗi xảy ra
                 let t = "Mất kết nối";
                 let h = "Mất kết nối";
-                let tColor = "#d32f2f"; // Mặc định màu đỏ lỗi
+                let tColor = "#d32f2f"; 
                 let hColor = "#d32f2f"; 
 
                 if (thoiGianCapNhat && rawT !== undefined && rawH !== undefined) {
@@ -796,13 +791,10 @@ function hienThiDanhSachKho() {
                     const thoiGianHienTai = new Date();
                     const doLechThoiGian = Math.abs(thoiGianHienTai - thoiGianEsp);
 
-                    // Chuẩn hóa chuỗi dữ liệu từ Firebase về chữ IN HOA để so sánh chính xác nhất
                     const checkStrT = String(rawT).trim().toUpperCase();
                     const checkStrH = String(rawH).trim().toUpperCase();
 
-                    // Nếu thiết bị gửi tín hiệu mới trong vòng dưới 3 phút (180000 ms)
                     if (doLechThoiGian < 180000) { 
-                        // Kiểm tra lỗi cảm biến (Bao gồm cả chữ viết hoa, viết thường hoặc chứa từ khóa lỗi)
                         if (checkStrT.includes("ERR") || checkStrH.includes("ERR") || 
                             checkStrT.includes("SIGNAL") || checkStrH.includes("SIGNAL") || 
                             rawT === "" || rawH === "") {
@@ -811,33 +803,28 @@ function hienThiDanhSachKho() {
                             tColor = "#d32f2f"; 
                             hColor = "#d32f2f";
                         } else {
-                            // Nếu dữ liệu dạng số bình thường -> Hiển thị kèm đơn vị đo
                             t = `${rawT} °C`;
                             h = `${rawH} %`;
-                            tColor = "#ff5722"; // Trả về màu cam đỏ khi hoạt động bình thường
-                            hColor = "#00bcd4"; // Trả về màu xanh khi hoạt động bình thường
+                            tColor = "#ff5722"; 
+                            hColor = "#00bcd4"; 
                         }
                     } else {
-                        // Quá 3 phút không phản hồi -> Ngoại tuyến (Offline)
                         t = "Mất kết nối";
                         h = "Mất kết nối";
                         tColor = "#d32f2f"; 
                         hColor = "#d32f2f";
                     }
                 } else {
-                    // Chưa từng có dữ liệu
                     t = "Mất kết nối";
                     h = "Mất kết nối";
                     tColor = "#d32f2f";
                     hColor = "#d32f2f";
                 }
 
-                // Đọc trực tiếp từ nhánh TenThietBi trên Firebase
                 const tenKhuVuc = item.TenThietBi && item.TenThietBi.trim() !== "" 
                                   ? item.TenThietBi 
                                   : "<span style='color: #555; font-style: italic;'>(Chưa đặt tên khu vực)</span>";
 
-                // Đọc mật khẩu XÓA từ nhánh matkhauthietbi/password để hiển thị icon khóa
                 const deletePassword = item.device?.matkhauthietbi?.password;
                 const hasDeletePassword = (deletePassword && deletePassword.trim() !== "");
                 const lockIcon = hasDeletePassword ? "🔒" : "🔑";
@@ -845,7 +832,6 @@ function hienThiDanhSachKho() {
                 const card = document.createElement('div');
                 card.style.cssText = "background: #252525; padding: 20px; border-radius: 12px; border-left: 5px solid #00adb5; text-align: left; cursor: pointer; transition: 0.2s; position: relative;";
                 
-                // 💡 ĐÃ XÓA bỏ ký tự °C và % viết cứng ở đuôi chuỗi hiển thị
                 card.innerHTML = `
                     <h3 style="color: #fff; margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase; padding-right: 45px;">
                         💻 ${id.toUpperCase()}
@@ -893,7 +879,6 @@ function hienThiDanhSachKho() {
         }
     });
 
-    // Sự kiện Tạo thêm thiết bị mới
     document.getElementById('btn-add-new-device').addEventListener('click', async () => {
         const deviceIdInput = prompt("Nhập mã thiết bị mới (Ví dụ: device2, device3 - viết liền không dấu):");
         if (!deviceIdInput) return;
@@ -938,7 +923,6 @@ function hienThiDanhSachKho() {
     });
 }
 
-  // --- HÀM XỬ LÝ KHÓA / ĐẶT MẬT KHẨU CHO NÚT XÓA ---
   function thietLapHoacMoKhoa(id, encodedPassword) {
       const hasPassword = (encodedPassword && encodedPassword.trim() !== "");
 
@@ -973,7 +957,6 @@ function hienThiDanhSachKho() {
       }
   }
 
-  // --- HÀM XỬ LÝ XÓA THIẾT BỊ TRÊN FIREBASE (CÓ BẢO MẬT) ---
   function xoaThietBiBaoMat(id, encodedPassword) {
       const hasPassword = (encodedPassword && encodedPassword.trim() !== "");
 
@@ -1047,7 +1030,6 @@ function hienThiDanhSachKho() {
           backBtn.innerText = "⬅️ ĐỔI THIẾT BỊ KHO TRỨNG";
           backBtn.style.cssText = "background: #555; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px;";
           backBtn.addEventListener('click', () => {
-              // 💡 CẬP NHẬT: Reset chuỗi thời gian khi thoát ra ngoài
               latestTimeStr = "";
               hienThiDanhSachKho();
           });
@@ -1116,13 +1098,11 @@ function hienThiDanhSachKho() {
           }
       });
 
-      // Lắng nghe giá trị biến Hiện Tại của kho được chọn
       onValue(ref(db, `devices/${currentDeviceId}/HienTai`), (snapshot) => {
           const data = snapshot.val();
           if (data) {
               latestTemp = data.NhietDo ?? "ERR";
               latestHum = data.DoAm ?? "ERR";
-              // 💡 CẬP NHẬT: Đồng bộ chuỗi thời gian trực tiếp từ Firebase
               latestTimeStr = data.ThoiGian ?? ""; 
           }
       });
@@ -1164,8 +1144,6 @@ function hienThiDanhSachKho() {
       loadDataByDate(datePicker.value);
   }
 
-  // --- TRÌNH DIỄN THÔNG SỐ VÀ CẢNH BÁO MỖI 2 GIÂY ---
-  // 💡 CẬP NHẬT: Sửa logic kiểm tra ngoại tuyến tức thì dựa trên mốc thời gian của ESP32
   setInterval(() => {
       if (!currentDeviceId) return; 
 
@@ -1174,12 +1152,11 @@ function hienThiDanhSachKho() {
 
       if (latestTimeStr && latestTimeStr.trim() !== "") {
           const thoiGianEsp = new Date(latestTimeStr.replace(/-/g, '/'));
-          // Nếu mốc thời gian của gói tin cuối lệch quá 15 giây so với giờ máy tính -> Báo lỗi ngay lập tức
           if (isNaN(thoiGianEsp.getTime()) || Math.abs(now - thoiGianEsp) > 15000) {
               isOffline = true;
           }
       } else {
-          isOffline = true; // Trống mốc thời gian đồng nghĩa chưa kết nối
+          isOffline = true; 
       }
 
       if (isOffline) {
@@ -1303,12 +1280,16 @@ function hienThiDanhSachKho() {
   datePicker.parentNode.replaceChild(newDatePicker, datePicker);
   newDatePicker.addEventListener('change', (e) => loadDataByDate(e.target.value));
 
+  // --- SỬA ĐỔI HOÀN CHỈNH HÀM ĐỌC LỊCH SỬ THEO NHÁNH NGÀY ---
   function loadDataByDate(htmlTargetDate) {
       if (!currentDeviceId) return;
+
+      // Định dạng ngày hiển thị Excel (DD/MM/YYYY)
       const parts = htmlTargetDate.split('-');
       const formattedTargetDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
 
-      onValue(ref(db, `devices/${currentDeviceId}/LichSu`), (snapshot) => {
+      // Đi thẳng vào thư mục ngày được chọn: devices/device1/LichSu/YYYY-MM-DD
+      onValue(ref(db, `devices/${currentDeviceId}/LichSu/${htmlTargetDate}`), (snapshot) => {
           tempChart.data.labels = []; tempChart.data.datasets[0].data = [];
           humChart.data.labels = []; humChart.data.datasets[0].data = [];
           excelRawData = []; 
@@ -1327,16 +1308,21 @@ function hienThiDanhSachKho() {
                      checkT !== 0 && checkH !== 0) {
                       
                       let recordDateTime = item.ThoiGian ? new Date(item.ThoiGian.replace(/-/g, '/')) : decodeFirebaseIdTimestamp(key);
-                      const recordDateStr = String(recordDateTime.getDate()).padStart(2, '0') + '/' + String(recordDateTime.getMonth() + 1).padStart(2, '0') + '/' + recordDateTime.getFullYear();
                       
-                      if (recordDateStr === formattedTargetDate) {
-                          const timeLabel = String(recordDateTime.getHours()).padStart(2, '0') + ':' + String(recordDateTime.getMinutes()).padStart(2, '0');
-                          tempChart.data.labels.push(timeLabel);
-                          tempChart.data.datasets[0].data.push(checkT);
-                          humChart.data.labels.push(timeLabel);
-                          humChart.data.datasets[0].data.push(checkH);
-                          excelRawData.push({"STT": count++, "Thời Gian": recordDateStr + " " + timeLabel, "Nhiệt Độ (°C)": checkT, "Độ Ẩm (%)": checkH});
-                      }
+                      // Cắt ngắn chuỗi hiển thị trục X thành Giờ:Phút
+                      const timeLabel = String(recordDateTime.getHours()).padStart(2, '0') + ':' + String(recordDateTime.getMinutes()).padStart(2, '0');
+                      
+                      tempChart.data.labels.push(timeLabel);
+                      tempChart.data.datasets[0].data.push(checkT);
+                      humChart.data.labels.push(timeLabel);
+                      humChart.data.datasets[0].data.push(checkH);
+                      
+                      excelRawData.push({
+                          "STT": count++, 
+                          "Thời Gian": formattedTargetDate + " " + timeLabel, 
+                          "Nhiệt Độ (°C)": checkT, 
+                          "Độ Ẩm (%)": checkH
+                      });
                   }
               });
           }
@@ -1368,4 +1354,3 @@ function hienThiDanhSachKho() {
 </script>
 </body>
 </html> 
-
