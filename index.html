@@ -638,7 +638,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import CryptoJS from "https://esm.sh/crypto-js";
   
   const firebaseConfig = {
@@ -657,6 +657,7 @@
 
   // --- BIẾN TOÀN CỤC THAY ĐỔI ĐỂ ĐA NHÁNH ---
   let currentDeviceId = ""; 
+  let activeListeners = []; // Mảng quản lý các listener Firebase để hủy khi chuyển thiết bị
 
   const tempElement = document.getElementById('txt-temp');
   const humElement = document.getElementById('txt-hum');
@@ -729,7 +730,44 @@
       options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
   });
 
-  import { setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  // --- HÀM HỦY LẮNG NGHE FIREBASE & RESET TRẠNG THÁI ---
+  function clearAllListeners() {
+      activeListeners.forEach(unsub => {
+          if (typeof unsub === 'function') unsub();
+      });
+      activeListeners = [];
+  }
+
+  function resetDeviceState() {
+      // 1. Reset biến dữ liệu
+      latestTemp = "No Signal";
+      latestHum = "No Signal";
+      latestTimeStr = "";
+      excelRawData = [];
+
+      // 2. Reset hiển thị văn bản
+      if (tempElement) tempElement.innerText = "-";
+      if (humElement) humElement.innerText = "-";
+      if (statusText) statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> Đang kết nối...`;
+      if (alertDisplay) alertDisplay.innerText = "Đang tải dữ liệu...";
+      if (alertDisplay) alertDisplay.style.color = "#aaa";
+
+      // 3. Reset ngưỡng cài đặt
+      if (minTempInput) minTempInput.value = "";
+      if (maxTempInput) maxTempInput.value = "";
+      if (minHumInput) minHumInput.value = "";
+      if (maxHumInput) maxHumInput.value = "";
+
+      // 4. Clear dữ liệu biểu đồ
+      if (tempChart && humChart) {
+          tempChart.data.labels = [];
+          tempChart.data.datasets[0].data = [];
+          humChart.data.labels = [];
+          humChart.data.datasets[0].data = [];
+          tempChart.update();
+          humChart.update();
+      }
+  }
 
   document.getElementById('btn-login').addEventListener('click', () => {
       const userEmail = document.getElementById('username').value.trim();
@@ -756,6 +794,10 @@
   });
 
 function hienThiDanhSachKho() {
+    clearAllListeners();
+    resetDeviceState();
+    currentDeviceId = "";
+
     document.getElementById('main-container').style.display = 'none';
     deviceSelectionPage.style.display = 'block';
     
@@ -767,7 +809,7 @@ function hienThiDanhSachKho() {
         </button>
     `;
 
-    onValue(ref(db, 'devices'), (snapshot) => {
+    const unsubDevicesList = onValue(ref(db, 'devices'), (snapshot) => {
         const grid = document.getElementById('device-grid');
         if (!grid) return;
         grid.innerHTML = "";
@@ -878,6 +920,7 @@ function hienThiDanhSachKho() {
             });
         }
     });
+    activeListeners.push(unsubDevicesList);
 
     document.getElementById('btn-add-new-device').addEventListener('click', async () => {
         const deviceIdInput = prompt("Nhập mã thiết bị mới (Ví dụ: device2, device3 - viết liền không dấu):");
@@ -1024,20 +1067,24 @@ function hienThiDanhSachKho() {
   }
 
   function startFirebaseSync() {
+      // 1. Dọn dẹp listener & Reset giao diện ngay lập tức
+      clearAllListeners();
+      resetDeviceState();
+
       if (!document.getElementById('btn-back-to-list')) {
           const backBtn = document.createElement('button');
           backBtn.id = 'btn-back-to-list';
           backBtn.innerText = "⬅️ ĐỔI THIẾT BỊ KHO TRỨNG";
           backBtn.style.cssText = "background: #555; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 15px;";
           backBtn.addEventListener('click', () => {
-              latestTimeStr = "";
               hienThiDanhSachKho();
           });
           document.getElementById('main-container').insertBefore(backBtn, document.getElementById('main-container').firstChild);
       }
 
+      // 2. Đăng ký các Listener Firebase mới & lưu vào mảng activeListeners
       for (let i = 1; i <= 4; i++) {
-          onValue(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), (snapshot) => {
+          const unsubRelayConfig = onValue(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), (snapshot) => {
               const data = snapshot.val();
               if (data) {
                   document.getElementById(`name-relay${i}`).value = data.Name || "";
@@ -1046,6 +1093,7 @@ function hienThiDanhSachKho() {
                   document.getElementById(`stop-relay${i}`).value = data.Stop || "";
               }
           });
+          activeListeners.push(unsubRelayConfig);
           
           const btnSave = document.getElementById(`btn-save-relay${i}`);
           const newBtnSave = btnSave.cloneNode(true);
@@ -1053,7 +1101,7 @@ function hienThiDanhSachKho() {
           newBtnSave.addEventListener('click', () => saveDeviceConfig(i));
       }
 
-      onValue(ref(db, `devices/${currentDeviceId}/DieuKhien`), (snapshot) => {
+      const unsubDieuKhien = onValue(ref(db, `devices/${currentDeviceId}/DieuKhien`), (snapshot) => {
           const data = snapshot.val();
           if (data) {
               for (let i = 1; i <= 4; i++) {
@@ -1082,8 +1130,9 @@ function hienThiDanhSachKho() {
               }
           }
       });
+      activeListeners.push(unsubDieuKhien);
 
-      onValue(ref(db, `devices/${currentDeviceId}/CauHinh`), (snapshot) => {
+      const unsubCauHinh = onValue(ref(db, `devices/${currentDeviceId}/CauHinh`), (snapshot) => {
           const data = snapshot.val();
           if (data) {
               minTempInput.value = data.MinTemp ?? "";
@@ -1095,17 +1144,28 @@ function hienThiDanhSachKho() {
               configMaxTemp = parseFloat(data.MaxTemp) || 100;
               configMinHum = parseFloat(data.MinHum) || 0;
               configMaxHum = parseFloat(data.MaxHum) || 100;
+          } else {
+              minTempInput.value = "";
+              maxTempInput.value = "";
+              minHumInput.value = "";
+              maxHumInput.value = "";
           }
       });
+      activeListeners.push(unsubCauHinh);
 
-      onValue(ref(db, `devices/${currentDeviceId}/HienTai`), (snapshot) => {
+      const unsubHienTai = onValue(ref(db, `devices/${currentDeviceId}/HienTai`), (snapshot) => {
           const data = snapshot.val();
-          if (data) {
+          if (snapshot.exists() && data) {
               latestTemp = data.NhietDo ?? "ERR";
               latestHum = data.DoAm ?? "ERR";
               latestTimeStr = data.ThoiGian ?? ""; 
+          } else {
+              latestTemp = "No Signal";
+              latestHum = "No Signal";
+              latestTimeStr = "";
           }
       });
+      activeListeners.push(unsubHienTai);
 
       for (let i = 1; i <= 4; i++) {
           const switchEl = document.getElementById(`switch-relay${i}`);
@@ -1125,13 +1185,14 @@ function hienThiDanhSachKho() {
 
       const inputTenKho = document.getElementById('input-ten-kho');
       if (inputTenKho) {
-          onValue(ref(db, `devices/${currentDeviceId}/TenThietBi`), (snapshot) => {
+          const unsubTenThietBi = onValue(ref(db, `devices/${currentDeviceId}/TenThietBi`), (snapshot) => {
               if (snapshot.exists()) {
                   inputTenKho.value = snapshot.val();
               } else {
                   inputTenKho.value = "";
               }
           });
+          activeListeners.push(unsubTenThietBi);
 
           window.luuTenKhoFirebase = function(giatri) {
               if (!currentDeviceId) return;
@@ -1280,16 +1341,13 @@ function hienThiDanhSachKho() {
   datePicker.parentNode.replaceChild(newDatePicker, datePicker);
   newDatePicker.addEventListener('change', (e) => loadDataByDate(e.target.value));
 
-  // --- SỬA ĐỔI HOÀN CHỈNH HÀM ĐỌC LỊCH SỬ THEO NHÁNH NGÀY ---
   function loadDataByDate(htmlTargetDate) {
       if (!currentDeviceId) return;
 
-      // Định dạng ngày hiển thị Excel (DD/MM/YYYY)
       const parts = htmlTargetDate.split('-');
       const formattedTargetDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
 
-      // Đi thẳng vào thư mục ngày được chọn: devices/device1/LichSu/YYYY-MM-DD
-      onValue(ref(db, `devices/${currentDeviceId}/LichSu/${htmlTargetDate}`), (snapshot) => {
+      const unsubHistory = onValue(ref(db, `devices/${currentDeviceId}/LichSu/${htmlTargetDate}`), (snapshot) => {
           tempChart.data.labels = []; tempChart.data.datasets[0].data = [];
           humChart.data.labels = []; humChart.data.datasets[0].data = [];
           excelRawData = []; 
@@ -1308,8 +1366,6 @@ function hienThiDanhSachKho() {
                      checkT !== 0 && checkH !== 0) {
                       
                       let recordDateTime = item.ThoiGian ? new Date(item.ThoiGian.replace(/-/g, '/')) : decodeFirebaseIdTimestamp(key);
-                      
-                      // Cắt ngắn chuỗi hiển thị trục X thành Giờ:Phút
                       const timeLabel = String(recordDateTime.getHours()).padStart(2, '0') + ':' + String(recordDateTime.getMinutes()).padStart(2, '0');
                       
                       tempChart.data.labels.push(timeLabel);
@@ -1328,6 +1384,7 @@ function hienThiDanhSachKho() {
           }
           tempChart.update(); humChart.update();
       });
+      activeListeners.push(unsubHistory);
   }
 
   function decodeFirebaseIdTimestamp(id) {
