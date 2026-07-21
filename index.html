@@ -2,6 +2,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1279,7 +1280,7 @@ function hienThiDanhSachKho() {
       }
 
       [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => { if (el) el.disabled = isLocked; });
-      btnToggleLock.innerText = isLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
+      btnToggleLock.innerText = isLocked ? "🔒 MỞ KHÓA CHỈNH SỬA" : "🔓 KHÓA LẠI";
       btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
   });
 
@@ -1318,7 +1319,7 @@ function hienThiDanhSachKho() {
       }
 
       if (cardParent) ápDụngTrạngTháiKhóa(cardParent, isIoLocked);
-      this.innerText = isIoLocked ? "🔓 MỞ KHÓA CHỈNH SỬA" : "🔒 KHÓA LẠI";
+      this.innerText = isIoLocked ? "🔒 MỞ KHÓA CHỈNH SỬA" : "🔓 KHÓA LẠI";
       this.style.background = isIoLocked ? "#555" : "#f44336";
   });
 
@@ -1332,7 +1333,7 @@ function hienThiDanhSachKho() {
           alert("✅ Đã lưu cấu hình!");
           isLocked = true;
           [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => el.disabled = true);
-          btnToggleLock.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
+          btnToggleLock.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
           btnToggleLock.style.background = "#555";
       }).catch(e => alert("Lỗi: " + e.message));
   });
@@ -1405,8 +1406,13 @@ function hienThiDanhSachKho() {
   document.addEventListener("DOMContentLoaded", function() {
       const cardParentOnLoad = btnLockIo.closest('.control-block');
       if (cardParentOnLoad) { ápDụngTrạngTháiKhóa(cardParentOnLoad, true); }
-      btnLockIo.innerText = "🔓 MỞ KHÓA CHỈNH SỬA";
+      
+      // Khởi tạo ban đầu đang ở trạng thái KHÓA -> Nút dùng icon 🔒
+      btnLockIo.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
       btnLockIo.style.background = "#555";
+      
+      btnToggleLock.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
+      btnToggleLock.style.background = "#555";
   });
 </script>
 </body>
