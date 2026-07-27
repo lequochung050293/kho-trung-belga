@@ -749,7 +749,7 @@
       options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
   });
 
-  // --- HÀM TỰ ĐỘNG CHUYỂN ĐỔI KIỂU INPUT (TIME HOẶC NUMBER) ---
+  // --- HÀM TỰ ĐỘNG CHUYỂN ĐỔI KIỂU INPUT (TIME HOẶC NUMBER HỖ TRỢ SỐ THẬP PHÂN) ---
   function updateInputType(i) {
       const modeEl = document.getElementById(`mode-relay${i}`);
       const startInput = document.getElementById(`start-relay${i}`);
@@ -760,9 +760,14 @@
       if (mode === "DongHo") {
           startInput.type = "time";
           stopInput.type = "time";
+          startInput.removeAttribute("step");
+          stopInput.removeAttribute("step");
       } else {
           startInput.type = "number";
           stopInput.type = "number";
+          // Cho phép gõ số thập phân (0.1, 0.5, 2.3...) ở MỌI chế độ kiểu số
+          startInput.step = "any";
+          stopInput.step = "any";
       }
   }
 
