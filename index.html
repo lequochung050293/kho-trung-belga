@@ -983,10 +983,10 @@ function hienThiDanhSachKho() {
                 CauHinh: { MaxHum: "", MaxTemp: "", MinHum: "", MinTemp: "" },
                 HienTai: { DoAm: "", NhietDo: "", ThoiGian: "" },
                 DieuKhien: {
-                    ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
-                    ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" },
-                    ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }, 
-                    ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "" }
+                    ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 },
+                    ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 },
+                    ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 }, 
+                    ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 }
                 },
                 device: { 
                     config: { password: "" }, 
@@ -1115,9 +1115,13 @@ function hienThiDanhSachKho() {
           }
       }
 
-      // --- LƯU DỮ LIỆU LÊN FIREBASE KHI HỢP LỆ ---
+      // --- LƯU DỮ LIỆU LÊN FIREBASE KHI HỢP LỆ (BỔ SUNG THÊM CỜ TRIGGER) ---
       set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), {
-          Name: name, Mode: mode, Start: start, Stop: stop
+          Name: name, 
+          Mode: mode, 
+          Start: start, 
+          Stop: stop,
+          Trigger: Date.now() // <--- Bổ sung timestamp để ESP32 nhận diện mỗi lần nhấn nút Lưu là một lệnh mới
       });
 
       if (mode === "Manual") {
@@ -1249,12 +1253,9 @@ function hienThiDanhSachKho() {
           switchEl.parentNode.replaceChild(newSwitchEl, switchEl);
           
           newSwitchEl.addEventListener('change', (e) => {
-             // ✅ ĐOẠN CODE ĐÃ SỬA:
-		const status = e.target.checked ? 1 : 0;
-	    // Áp dụng set() ghi giá trị số 1 hoặc 0 trực tiếp cho TẤT CẢ các thiết bị (kể cả Thiết bị 3)
-		set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
-
-              // Đã loại bỏ dòng ép Mode về "Manual" để giữ nguyên Timer / DongHo khi bật/tắt thủ công
+              const status = e.target.checked ? 1 : 0;
+              // Áp dụng set() ghi giá trị số 1 hoặc 0 trực tiếp cho TẤT CẢ các thiết bị
+              set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
           });
       }
 
