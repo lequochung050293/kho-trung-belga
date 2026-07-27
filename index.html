@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -374,6 +375,8 @@
         <option value="Manual">Thủ công (ON/OFF)</option>
         <option value="NhietDo">Theo Nhiệt Độ</option>
         <option value="DoAm">Theo Độ Ẩm</option>
+	<option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
     </select>
 
     <!-- Khu vực nhập liệu với nhãn hiển thị cố định -->
@@ -403,6 +406,8 @@
         <option value="Manual">Thủ công (ON/OFF)</option>
         <option value="NhietDo">Theo Nhiệt Độ</option>
         <option value="DoAm">Theo Độ Ẩm</option>
+	<option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
     </select>
 
     <!-- Khu vực nhập liệu với nhãn hiển thị cố định -->
@@ -433,6 +438,8 @@
         <option value="Manual">Thủ công (ON/OFF)</option>
         <option value="NhietDo">Theo Nhiệt Độ</option>
         <option value="DoAm">Theo Độ Ẩm</option>
+	<option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
     </select>
 
     <div style="display: flex; gap: 5px; width: 100%;">
@@ -462,6 +469,8 @@
         <option value="Manual">Thủ công (ON/OFF)</option>
         <option value="NhietDo">Theo Nhiệt Độ</option>
         <option value="DoAm">Theo Độ Ẩm</option>
+	<option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
     </select>
 
     <div style="display: flex; gap: 5px; width: 100%;">
@@ -731,6 +740,23 @@
       options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
   });
 
+  // --- HÀM TỰ ĐỘNG CHUYỂN ĐỔI KIỂU INPUT (TIME HOẶC NUMBER) ---
+  function updateInputType(i) {
+      const modeEl = document.getElementById(`mode-relay${i}`);
+      const startInput = document.getElementById(`start-relay${i}`);
+      const stopInput = document.getElementById(`stop-relay${i}`);
+      if (!modeEl || !startInput || !stopInput) return;
+
+      const mode = modeEl.value;
+      if (mode === "DongHo") {
+          startInput.type = "time";
+          stopInput.type = "time";
+      } else {
+          startInput.type = "number";
+          stopInput.type = "number";
+      }
+  }
+
   // --- HÀM HỦY LẮNG NGHE FIREBASE & RESET TRẠNG THÁI ---
   function clearAllListeners() {
       activeListeners.forEach(unsub => {
@@ -740,26 +766,22 @@
   }
 
   function resetDeviceState() {
-      // 1. Reset biến dữ liệu
       latestTemp = "No Signal";
       latestHum = "No Signal";
       latestTimeStr = "";
       excelRawData = [];
 
-      // 2. Reset hiển thị văn bản
       if (tempElement) tempElement.innerText = "-";
       if (humElement) humElement.innerText = "-";
       if (statusText) statusText.innerHTML = `<span class="dot" style="background-color:#ff5722;"></span> Đang kết nối...`;
       if (alertDisplay) alertDisplay.innerText = "Đang tải dữ liệu...";
       if (alertDisplay) alertDisplay.style.color = "#aaa";
 
-      // 3. Reset ngưỡng cài đặt
       if (minTempInput) minTempInput.value = "";
       if (maxTempInput) maxTempInput.value = "";
       if (minHumInput) minHumInput.value = "";
       if (maxHumInput) maxHumInput.value = "";
 
-      // 4. Clear dữ liệu biểu đồ
       if (tempChart && humChart) {
           tempChart.data.labels = [];
           tempChart.data.datasets[0].data = [];
@@ -1055,6 +1077,31 @@ function hienThiDanhSachKho() {
       const start = document.getElementById(`start-relay${i}`).value;
       const stop = document.getElementById(`stop-relay${i}`).value;
 
+      // --- 1. KIỂM TRA ĐIỀU KIỆN TIMER ---
+      if (mode === "Timer") {
+          const startNum = parseFloat(start);
+          const stopNum = parseFloat(stop);
+
+          if (isNaN(startNum) || isNaN(stopNum)) {
+              alert("⚠️ Vui lòng nhập đầy đủ giá trị Bắt đầu và Dừng cho chế độ Timer!");
+              return;
+          }
+
+          if (startNum > stopNum) {
+              alert(`❌ CẢNH BÁO LƯU SAI:\nỞ chế độ Hẹn giờ (Timer), giá trị Bắt đầu (${startNum}) không được lớn hơn giá trị Dừng (${stopNum})!`);
+              return;
+          }
+      }
+
+      // --- 2. KIỂM TRA ĐIỀU KIỆN ĐỒNG HỒ ---
+      if (mode === "DongHo") {
+          if (!start || !stop) {
+              alert("⚠️ Vui lòng chọn đầy đủ khung giờ Bắt đầu và Dừng cho chế độ Theo Đồng Hồ!");
+              return;
+          }
+      }
+
+      // --- LƯU DỮ LIỆU LÊN FIREBASE KHI HỢP LỆ ---
       set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), {
           Name: name, Mode: mode, Start: start, Stop: stop
       });
@@ -1085,11 +1132,22 @@ function hienThiDanhSachKho() {
 
       // 2. Đăng ký các Listener Firebase mới & lưu vào mảng activeListeners
       for (let i = 1; i <= 4; i++) {
+          const modeSelect = document.getElementById(`mode-relay${i}`);
+          if (modeSelect) {
+              const newModeSelect = modeSelect.cloneNode(true);
+              modeSelect.parentNode.replaceChild(newModeSelect, modeSelect);
+              newModeSelect.addEventListener('change', () => updateInputType(i));
+          }
+
           const unsubRelayConfig = onValue(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), (snapshot) => {
               const data = snapshot.val();
               if (data) {
                   document.getElementById(`name-relay${i}`).value = data.Name || "";
                   document.getElementById(`mode-relay${i}`).value = data.Mode || "Manual";
+                  
+                  // Đổi type ô nhập (time/number) theo mode hiện tại
+                  updateInputType(i);
+
                   document.getElementById(`start-relay${i}`).value = data.Start || "";
                   document.getElementById(`stop-relay${i}`).value = data.Stop || "";
               }
@@ -1119,15 +1177,12 @@ function hienThiDanhSachKho() {
                   labelEl.style.color = status === 1 ? "#4caf50" : "#ccc";
                   switchEl.checked = (status === 1);
                   
-                  if (currentMode === "Manual" && !isIoLocked) {
-                      switchEl.disabled = false;
-                      switchEl.style.cursor = "pointer";
-                      switchEl.parentElement.style.opacity = "1";
-                  } else {
-                      switchEl.disabled = true;
-                      switchEl.style.cursor = "not-allowed";
-                      switchEl.parentElement.style.opacity = "0.5";
-                  }
+                  // CHỈ MỞ KHÓA NÚT SWITCH KHI Ở CHẾ ĐỘ THỦ CÔNG (MANUAL) VÀ ĐÃ MỞ KHÓA ĐIỀU KIỆN (isIoLocked = false)
+                  const canInteract = (currentMode === "Manual") && !isIoLocked;
+
+                  switchEl.disabled = !canInteract;
+                  switchEl.style.cursor = canInteract ? "pointer" : "not-allowed";
+                  switchEl.parentElement.style.opacity = canInteract ? "1" : "0.5";
               }
           }
       });
@@ -1174,13 +1229,20 @@ function hienThiDanhSachKho() {
           switchEl.parentNode.replaceChild(newSwitchEl, switchEl);
           
           newSwitchEl.addEventListener('change', (e) => {
-              const status = e.target.checked ? 1 : 0;
-              if (i === 3) {
-                  update(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi3`), { TrangThai: status });
-              } else {
-                  set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
+              const modeEl = document.getElementById(`mode-relay${i}`);
+              const currentMode = modeEl ? modeEl.value : "Manual";
+
+              // Bảo vệ: Nếu thiết bị không ở chế độ Thủ công thì không ghi dữ liệu lên Firebase
+              if (currentMode !== "Manual") {
+                  e.preventDefault();
+                  alert("⚠️ Thiết bị đang ở chế độ tự động. Vui lòng chọn chế độ 'Manual' và lưu lại nếu muốn bật/tắt thủ công!");
+                  return;
               }
-              set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config/Mode`), "Manual");
+
+             // ✅ ĐOẠN CODE ĐÃ SỬA:
+const status = e.target.checked ? 1 : 0;
+// Áp dụng set() ghi giá trị số 1 hoặc 0 trực tiếp cho TẤT CẢ các thiết bị (kể cả Thiết bị 3)
+set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
           });
       }
 
@@ -1284,9 +1346,24 @@ function hienThiDanhSachKho() {
       btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
   });
 
+  // HÀM ÁP DỤNG KHÓA / MỞ KHÓA CHÍNH XÁC
   function ápDụngTrạngTháiKhóa(cardParent, locked) {
-      const ioElements = cardParent.querySelectorAll('input, select, button:not(#btn-lock-io)');
-      ioElements.forEach(el => { el.disabled = locked; });
+      // 1. Khóa/Mở khóa ô nhập liệu cấu hình, chế độ, nút lưu (Ngoại trừ nút công tắc)
+      const inputs = cardParent.querySelectorAll('input:not([id^="switch-relay"]), select, button:not(#btn-lock-io)');
+      inputs.forEach(el => { el.disabled = locked; });
+
+      // 2. Cập nhật lại công tắc gạt thủ công dựa theo từng chế độ thực tế
+      for (let i = 1; i <= 4; i++) {
+          const modeEl = document.getElementById(`mode-relay${i}`);
+          const switchEl = document.getElementById(`switch-relay${i}`);
+          if (modeEl && switchEl) {
+              const currentMode = modeEl.value;
+              const canInteract = !locked && (currentMode === "Manual");
+              switchEl.disabled = !canInteract;
+              switchEl.style.cursor = canInteract ? "pointer" : "not-allowed";
+              switchEl.parentElement.style.opacity = canInteract ? "1" : "0.5";
+          }
+      }
   }
 
   btnLockIo.addEventListener('click', async function() {
@@ -1407,7 +1484,6 @@ function hienThiDanhSachKho() {
       const cardParentOnLoad = btnLockIo.closest('.control-block');
       if (cardParentOnLoad) { ápDụngTrạngTháiKhóa(cardParentOnLoad, true); }
       
-      // Khởi tạo ban đầu đang ở trạng thái KHÓA -> Nút dùng icon 🔒
       btnLockIo.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
       btnLockIo.style.background = "#555";
       
