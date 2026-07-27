@@ -1177,12 +1177,18 @@ function hienThiDanhSachKho() {
                   labelEl.style.color = status === 1 ? "#4caf50" : "#ccc";
                   switchEl.checked = (status === 1);
                   
-                  // CHỈ MỞ KHÓA NÚT SWITCH KHI Ở CHẾ ĐỘ THỦ CÔNG (MANUAL) VÀ ĐÃ MỞ KHÓA ĐIỀU KIỆN (isIoLocked = false)
-                  const canInteract = (currentMode === "Manual") && !isIoLocked;
+                  // MỞ KHÓA NÚT SWITCH KHI Ở CHẾ ĐỘ MANUAL, TIMER, VÀ DONGHO
+                  const isInteractiveMode = (currentMode === "Manual" || currentMode === "Timer" || currentMode === "DongHo");
 
-                  switchEl.disabled = !canInteract;
-                  switchEl.style.cursor = canInteract ? "pointer" : "not-allowed";
-                  switchEl.parentElement.style.opacity = canInteract ? "1" : "0.5";
+                  if (isInteractiveMode && !isIoLocked) {
+                      switchEl.disabled = false;
+                      switchEl.style.cursor = "pointer";
+                      switchEl.parentElement.style.opacity = "1";
+                  } else {
+                      switchEl.disabled = true;
+                      switchEl.style.cursor = "not-allowed";
+                      switchEl.parentElement.style.opacity = "0.5";
+                  }
               }
           }
       });
@@ -1229,20 +1235,12 @@ function hienThiDanhSachKho() {
           switchEl.parentNode.replaceChild(newSwitchEl, switchEl);
           
           newSwitchEl.addEventListener('change', (e) => {
-              const modeEl = document.getElementById(`mode-relay${i}`);
-              const currentMode = modeEl ? modeEl.value : "Manual";
-
-              // Bảo vệ: Nếu thiết bị không ở chế độ Thủ công thì không ghi dữ liệu lên Firebase
-              if (currentMode !== "Manual") {
-                  e.preventDefault();
-                  alert("⚠️ Thiết bị đang ở chế độ tự động. Vui lòng chọn chế độ 'Manual' và lưu lại nếu muốn bật/tắt thủ công!");
-                  return;
-              }
-
              // ✅ ĐOẠN CODE ĐÃ SỬA:
-const status = e.target.checked ? 1 : 0;
-// Áp dụng set() ghi giá trị số 1 hoặc 0 trực tiếp cho TẤT CẢ các thiết bị (kể cả Thiết bị 3)
-set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
+		const status = e.target.checked ? 1 : 0;
+	    // Áp dụng set() ghi giá trị số 1 hoặc 0 trực tiếp cho TẤT CẢ các thiết bị (kể cả Thiết bị 3)
+		set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
+
+              // Đã loại bỏ dòng ép Mode về "Manual" để giữ nguyên Timer / DongHo khi bật/tắt thủ công
           });
       }
 
@@ -1346,24 +1344,9 @@ set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), status);
       btnToggleLock.style.background = isLocked ? "#555" : "#f44336";
   });
 
-  // HÀM ÁP DỤNG KHÓA / MỞ KHÓA CHÍNH XÁC
   function ápDụngTrạngTháiKhóa(cardParent, locked) {
-      // 1. Khóa/Mở khóa ô nhập liệu cấu hình, chế độ, nút lưu (Ngoại trừ nút công tắc)
-      const inputs = cardParent.querySelectorAll('input:not([id^="switch-relay"]), select, button:not(#btn-lock-io)');
-      inputs.forEach(el => { el.disabled = locked; });
-
-      // 2. Cập nhật lại công tắc gạt thủ công dựa theo từng chế độ thực tế
-      for (let i = 1; i <= 4; i++) {
-          const modeEl = document.getElementById(`mode-relay${i}`);
-          const switchEl = document.getElementById(`switch-relay${i}`);
-          if (modeEl && switchEl) {
-              const currentMode = modeEl.value;
-              const canInteract = !locked && (currentMode === "Manual");
-              switchEl.disabled = !canInteract;
-              switchEl.style.cursor = canInteract ? "pointer" : "not-allowed";
-              switchEl.parentElement.style.opacity = canInteract ? "1" : "0.5";
-          }
-      }
+      const ioElements = cardParent.querySelectorAll('input, select, button:not(#btn-lock-io)');
+      ioElements.forEach(el => { el.disabled = locked; });
   }
 
   btnLockIo.addEventListener('click', async function() {
