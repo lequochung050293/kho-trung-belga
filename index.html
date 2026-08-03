@@ -6,6 +6,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -808,7 +809,7 @@
       options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
   });
 
-  // --- HÀM TỰ ĐỘNG CHUYỂN ĐỔI KIỂU INPUT (TIME HOẶC NUMBER HỖ TRỢ SỐ THẬP PHÂN) ---
+ // --- HÀM TỰ ĐỘNG CHUYỂN ĐỔI KIỂU INPUT VÀ RESET KHI Ở CHẾ ĐỘ THỦ CÔNG ---
   function updateInputType(i) {
       const modeEl = document.getElementById(`mode-relay${i}`);
       const startInput = document.getElementById(`start-relay${i}`);
@@ -816,6 +817,13 @@
       if (!modeEl || !startInput || !stopInput) return;
 
       const mode = modeEl.value;
+
+      // Nếu là chế độ Thủ công (Manual) -> Reset 2 ô về trống
+      if (mode === "Manual") {
+          startInput.value = "";
+          stopInput.value = "";
+      }
+
       if (mode === "DongHo") {
           startInput.type = "time";
           stopInput.type = "time";
@@ -1144,13 +1152,42 @@ function hienThiDanhSachKho() {
       }
   });
 
-  function saveDeviceConfig(i) {
-      const name = document.getElementById(`name-relay${i}`).value;
-      const mode = document.getElementById(`mode-relay${i}`).value;
-      const start = document.getElementById(`start-relay${i}`).value;
-      const stop = document.getElementById(`stop-relay${i}`).value;
+function saveDeviceConfig(i) {
+      const nameEl = document.getElementById(`name-relay${i}`);
+      const modeEl = document.getElementById(`mode-relay${i}`);
+      const startEl = document.getElementById(`start-relay${i}`);
+      const stopEl = document.getElementById(`stop-relay${i}`);
 
-      // --- 1. KIỂM TRA ĐIỀU KIỆN TIMER ---
+      const name = nameEl ? nameEl.value : "";
+      const mode = modeEl ? modeEl.value : "Manual";
+      
+      let start = startEl ? startEl.value.trim() : "";
+      let stop = stopEl ? stopEl.value.trim() : "";
+
+      // --- 1. XỬ LÝ RIÊNG CHO CHẾ ĐỘ THỦ CÔNG (MANUAL) ---
+      if (mode === "Manual") {
+          start = "";
+          stop = "";
+          if (startEl) startEl.value = "";
+          if (stopEl) stopEl.value = "";
+
+          // Cập nhật cấu hình lên Firebase
+          set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), {
+              Name: name, 
+              Mode: "Manual", 
+              Start: "", 
+              Stop: "",
+              Trigger: Date.now()
+          });
+
+          // Đưa trạng thái thiết bị về TẮT (0)
+          set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), 0); 
+
+          alert(`✅ Đã lưu cấu hình! Thiết bị ${i} được đưa về Chế độ Thủ công (TẮT).`);
+          return; // Dừng hàm ngay sau khi lưu thành công chế độ Manual
+      }
+
+      // --- 2. KIỂM TRA ĐIỀU KIỆN CHO CHẾ ĐỘ TIMER ---
       if (mode === "Timer") {
           const startNum = parseFloat(start);
           const stopNum = parseFloat(stop);
@@ -1166,7 +1203,7 @@ function hienThiDanhSachKho() {
           }
       }
 
-      // --- 2. KIỂM TRA ĐIỀU KIỆN ĐỒNG HỒ ---
+      // --- 3. KIỂM TRA ĐIỀU KIỆN CHO CHẾ ĐỘ ĐỒNG HỒ ---
       if (mode === "DongHo") {
           if (!start || !stop) {
               alert("⚠️ Vui lòng chọn đầy đủ khung giờ Bắt đầu và Dừng cho chế độ Theo Đồng Hồ!");
@@ -1174,22 +1211,31 @@ function hienThiDanhSachKho() {
           }
       }
 
-      // --- LƯU DỮ LIỆU LÊN FIREBASE KHI HỢP LỆ (BỔ SUNG THÊM CỜ TRIGGER) ---
+      // --- 4. KIỂM TRA ĐIỀU KIỆN CHO NHIỆT ĐỘ & ĐỘ ẨM ---
+      if (mode === "NhietDo" || mode === "DoAm") {
+          if (start === "" || stop === "") {
+              const tenCheDo = mode === "NhietDo" ? "Theo Nhiệt Độ" : "Theo Độ Ẩm";
+              alert(`⚠️ Vui lòng nhập đầy đủ giá trị Bắt đầu và Dừng cho chế độ ${tenCheDo}!`);
+              return;
+          }
+      }
+
+      // --- 5. LƯU CHO CÁC CHẾ ĐỘ TỰ ĐỘNG KHÁC ---
       set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}_Config`), {
           Name: name, 
           Mode: mode, 
           Start: start, 
           Stop: stop,
-          Trigger: Date.now() // <--- Bổ sung timestamp để ESP32 nhận diện mỗi lần nhấn nút Lưu là một lệnh mới
+          Trigger: Date.now()
+      }).then(() => {
+          alert(`✅ Đã lưu cấu hình. Thiết bị ${i} tự động vận hành theo ${mode}.`);
+      }).catch(error => {
+          alert("❌ Lỗi không thể lưu lên Firebase: " + error.message);
       });
-
-      if (mode === "Manual") {
-          set(ref(db, `devices/${currentDeviceId}/DieuKhien/ThietBi${i}`), 0); 
-          alert(`Đã lưu cấu hình. Thiết bị ${i} được đưa về trạng thái TẮT (Thủ công).`);
-      } else {
-          alert(`Đã lưu cấu hình. Thiết bị ${i} tự động vận hành theo ${mode}.`);
-      }
   }
+
+
+
 
   function startFirebaseSync() {
       // 1. Dọn dẹp listener & Reset giao diện ngay lập tức
