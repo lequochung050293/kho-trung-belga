@@ -259,7 +259,7 @@ HỆ THỐNG GIÁM SÁT & ĐIỀU KHIỂN BEL GÀ
 <p class="subtitle" style="margin: 0;">Mặc định hiển thị ngày hôm nay - Chọn ngày để xem lịch sử cũ</p>
 </div>
 
-<!-- LOGO TRÒN BEL GÀ (GIỮ TRỌN VẸN 100% CÁC VECTOR PATH) -->
+<!-- LOGO TRÒN BEL GÀ -->
 <div class="logo-container">
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin: 20px 0;">
 <div style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 2px solid #ccff00; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -320,7 +320,7 @@ HỆ THỐNG GIÁM SÁT & ĐIỀU KHIỂN BEL GÀ
 </div>
 </div>
 
-<!-- NÚT TELEGRAM CÓ VIỀN TRẮNG -->
+<!-- NÚT TELEGRAM -->
 <div style="text-align: center; margin: 0 auto 20px auto; width: fit-content;">
 <a href="https://t.me/Canhbaokhotrung" target="_blank" style="display: flex; align-items: center; justify-content: center; background: #0088cc; color: #ffffff !important; padding: 8px 16px 8px 8px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background 0.3s;">
 <div style="width: 32px; height: 32px; margin-right: 8px; display: flex; align-items: center; justify-content: center;">
@@ -376,7 +376,7 @@ title="Nhấn để Mở / Khóa chỉnh sửa">
 </svg>
 </div>
 </div>
-<!-- Card Độ Ẩm (Tự ẩn khi vào phân hệ Tủ Vacxin) -->
+<!-- Card Độ Ẩm -->
 <div class="card hum" id="card-hum">
 <div class="info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
 <div>
@@ -393,7 +393,7 @@ title="Nhấn để Mở / Khóa chỉnh sửa">
 </div>
 <div id="alert-display">Đang kiểm tra trạng thái...</div>
 
-<!-- BẢNG ĐIỀU KHIỂN RELAY CÓ SVG BÁNH RĂNG CÀI ĐẶT -->
+<!-- BẢNG ĐIỀU KHIỂN RELAY -->
 <div class="control-block" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -411,112 +411,183 @@ Bảng Điều Khiển Thiết Bị (Chân IO ESP32)
 <div class="switch-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
 <!-- Thiết bị 1 -->
 <div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-<input type="text" id="name-relay1" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-<select id="mode-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
-<option value="Manual">Thủ công (ON/OFF)</option>
-<option value="NhietDo">Theo Nhiệt Độ</option>
-<option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
-<option value="Timer">Hẹn giờ (Timer)</option>
-<option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
-</select>
-<div style="display: flex; gap: 5px; width: 100%;">
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
-<input type="number" id="start-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    <input type="text" id="name-relay1" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    <select id="mode-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
+        <option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
+    </select>
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB1 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <div id="box-luanphien-relay1" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
+            <input type="checkbox" id="chk-luanphien-relay1" onchange="window.toggleLuanPhienInputs(1)">
+            🔄 Chạy luân phiên
+        </label>
+        <div id="inputs-luanphien-relay1" style="display: none; gap: 5px; width: 100%;">
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #4caf50; margin-bottom: 2px; font-weight: bold;">Bật (phút)</div>
+                <input type="number" id="ontime-relay1" min="1" placeholder="VD: 5" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #ff5722; margin-bottom: 2px; font-weight: bold;">Tắt (phút)</div>
+                <input type="number" id="offtime-relay1" min="1" placeholder="VD: 3" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+        </div>
+    </div>
+    <button class="btn-action" id="btn-save-relay1" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 1</button>
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay1">TB 1: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay1"><span class="slider"></span></label>
+    </div>
 </div>
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
-<input type="number" id="stop-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-</div>
-</div>
-<button class="btn-action" id="btn-save-relay1" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 1</button>
-<div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
-<span class="switch-name" id="label-relay1">TB 1: OFF</span>
-<label class="toggle-switch"><input type="checkbox" id="switch-relay1"><span class="slider"></span></label>
-</div>
-</div>
+
 <!-- Thiết bị 2 -->
 <div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-<input type="text" id="name-relay2" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-<select id="mode-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
-<option value="Manual">Thủ công (ON/OFF)</option>
-<option value="NhietDo">Theo Nhiệt Độ</option>
-<option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
-<option value="Timer">Hẹn giờ (Timer)</option>
-<option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
-</select>
-<div style="display: flex; gap: 5px; width: 100%;">
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
-<input type="number" id="start-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    <input type="text" id="name-relay2" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    <select id="mode-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
+        <option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
+    </select>
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB2 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <div id="box-luanphien-relay2" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
+            <input type="checkbox" id="chk-luanphien-relay2" onchange="window.toggleLuanPhienInputs(2)">
+            🔄 Chạy luân phiên
+        </label>
+        <div id="inputs-luanphien-relay2" style="display: none; gap: 5px; width: 100%;">
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #4caf50; margin-bottom: 2px; font-weight: bold;">Bật (phút)</div>
+                <input type="number" id="ontime-relay2" min="1" placeholder="VD: 5" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #ff5722; margin-bottom: 2px; font-weight: bold;">Tắt (phút)</div>
+                <input type="number" id="offtime-relay2" min="1" placeholder="VD: 3" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+        </div>
+    </div>
+    <button class="btn-action" id="btn-save-relay2" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 2</button>
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay2">TB 2: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay2"><span class="slider"></span></label>
+    </div>
 </div>
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
-<input type="number" id="stop-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-</div>
-</div>
-<button class="btn-action" id="btn-save-relay2" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 2</button>
-<div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
-<span class="switch-name" id="label-relay2">TB 2: OFF</span>
-<label class="toggle-switch"><input type="checkbox" id="switch-relay2"><span class="slider"></span></label>
-</div>
-</div>
+
 <!-- Thiết bị 3 -->
 <div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-<input type="text" id="name-relay3" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-<select id="mode-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
-<option value="Manual">Thủ công (ON/OFF)</option>
-<option value="NhietDo">Theo Nhiệt Độ</option>
-<option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
-<option value="Timer">Hẹn giờ (Timer)</option>
-<option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
-</select>
-<div style="display: flex; gap: 5px; width: 100%;">
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
-<input type="number" id="start-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    <input type="text" id="name-relay3" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    <select id="mode-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
+        <option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
+    </select>
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB3 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <div id="box-luanphien-relay3" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
+            <input type="checkbox" id="chk-luanphien-relay3" onchange="window.toggleLuanPhienInputs(3)">
+            🔄 Chạy luân phiên
+        </label>
+        <div id="inputs-luanphien-relay3" style="display: none; gap: 5px; width: 100%;">
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #4caf50; margin-bottom: 2px; font-weight: bold;">Bật (phút)</div>
+                <input type="number" id="ontime-relay3" min="1" placeholder="VD: 5" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #ff5722; margin-bottom: 2px; font-weight: bold;">Tắt (phút)</div>
+                <input type="number" id="offtime-relay3" min="1" placeholder="VD: 3" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+        </div>
+    </div>
+    <button class="btn-action" id="btn-save-relay3" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 3</button>
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay3">TB 3: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay3"><span class="slider"></span></label>
+    </div>
 </div>
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
-<input type="number" id="stop-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-</div>
-</div>
-<button class="btn-action" id="btn-save-relay3" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 3</button>
-<div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
-<span class="switch-name" id="label-relay3">TB 3: OFF</span>
-<label class="toggle-switch"><input type="checkbox" id="switch-relay3"><span class="slider"></span></label>
-</div>
-</div>
+
 <!-- Thiết bị 4 -->
 <div class="switch-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-<input type="text" id="name-relay4" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-<select id="mode-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
-<option value="Manual">Thủ công (ON/OFF)</option>
-<option value="NhietDo">Theo Nhiệt Độ</option>
-<option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
-<option value="Timer">Hẹn giờ (Timer)</option>
-<option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
-</select>
-<div style="display: flex; gap: 5px; width: 100%;">
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
-<input type="number" id="start-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-</div>
-<div style="width: 50%;">
-<div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
-<input type="number" id="stop-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
-</div>
-</div>
-<button class="btn-action" id="btn-save-relay4" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 4</button>
-<div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
-<span class="switch-name" id="label-relay4">TB 4: OFF</span>
-<label class="toggle-switch"><input type="checkbox" id="switch-relay4"><span class="slider"></span></label>
-</div>
+    <input type="text" id="name-relay4" placeholder="Tên thiết bị..." style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+    <select id="mode-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border-radius: 4px;">
+        <option value="Manual">Thủ công (ON/OFF)</option>
+        <option value="NhietDo">Theo Nhiệt Độ</option>
+        <option value="DoAm" class="opt-doam">Theo Độ Ẩm</option>
+        <option value="Timer">Hẹn giờ (Timer)</option>
+        <option value="DongHo">Theo Đồng Hồ (Lịch trình)</option>
+    </select>
+    <div style="display: flex; gap: 5px; width: 100%;">
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Bắt đầu</div>
+            <input type="number" id="start-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+        <div style="width: 50%;">
+            <div style="font-size: 10px; color: #888; margin-bottom: 2px;">Dừng</div>
+            <input type="number" id="stop-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
+        </div>
+    </div>
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB4 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <div id="box-luanphien-relay4" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
+            <input type="checkbox" id="chk-luanphien-relay4" onchange="window.toggleLuanPhienInputs(4)">
+            🔄 Chạy luân phiên
+        </label>
+        <div id="inputs-luanphien-relay4" style="display: none; gap: 5px; width: 100%;">
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #4caf50; margin-bottom: 2px; font-weight: bold;">Bật (phút)</div>
+                <input type="number" id="ontime-relay4" min="1" placeholder="VD: 5" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+            <div style="width: 50%;">
+                <div style="font-size: 10px; color: #ff5722; margin-bottom: 2px; font-weight: bold;">Tắt (phút)</div>
+                <input type="number" id="offtime-relay4" min="1" placeholder="VD: 3" style="width: 100%; background: #1e1e1e; color: white; padding: 5px; border: 1px solid #444; border-radius: 4px; font-size: 12px;">
+            </div>
+        </div>
+    </div>
+    <button class="btn-action" id="btn-save-relay4" style="background: #ff9800; color: white; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer;">LƯU THIẾT BỊ 4</button>
+    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 5px;">
+        <span class="switch-name" id="label-relay4">TB 4: OFF</span>
+        <label class="toggle-switch"><input type="checkbox" id="switch-relay4"><span class="slider"></span></label>
+    </div>
 </div>
 </div>
 </div>
 
-<!-- THIẾT LẬP NGƯỠNG CẢNH BÁO CÓ SVG CHUÔNG CẢNH BÁO -->
+<!-- THIẾT LẬP NGƯỠNG CẢNH BÁO -->
 <div class="control-block" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -560,7 +631,7 @@ Thiết lập ngưỡng cảnh báo (Min/Max)
 <button class="btn-action btn-save-config" id="btn-save-config" style="background: #2196f3; color: white;">LƯU CẤU HÌNH CẢNH BÁO</button>
 </div>
 
-<!-- CÀI ĐẶT MẬT KHẨU CẤU HÌNH CÓ SVG CHÌA KHÓA -->
+<!-- CÀI ĐẶT MẬT KHẨU CẤU HÌNH -->
 <div class="control-block" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -590,7 +661,7 @@ style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #2d
 </div>
 </div>
 
-<!-- LỊCH SỬ & BIỂU ĐỒ CÓ SVG ĐỒNG HỒ BÁO CÁO -->
+<!-- LỊCH SỬ & BIỂU ĐỒ -->
 <div class="control-block" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -641,7 +712,7 @@ import { getDatabase, ref, onValue, set, get, update, remove } from "https://www
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import CryptoJS from "https://esm.sh/crypto-js";
 
-// Cấu hình Firebase gốc của bạn
+// Cấu hình Firebase
 const firebaseConfig = {
 apiKey: "AIzaSyBQwoGM-JWiYh27MRwt5IOgedL5QTj-AmM",
 authDomain: "cam-bien-nhiet-do-do-am-d20f3.firebaseapp.com",
@@ -657,11 +728,10 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 
 // --- BIẾN QUẢN LÝ PHÂN HỆ VÀ THIẾT BỊ ---
-let currentCategory = "khotrung"; // "khotrung" hoặc "vacxin"
+let currentCategory = "khotrung";
 let currentDeviceId = "";
 let activeListeners = [];
 
-// Hàm tự động trỏ nhánh Firebase theo phân hệ đã chọn
 function getDbPath(subpath = "") {
 const root = (currentCategory === "vacxin") ? "devices_vacxin" : "devices";
 return subpath ? `${root}/${subpath}` : root;
@@ -670,14 +740,6 @@ return subpath ? `${root}/${subpath}` : root;
 const tempElement = document.getElementById('txt-temp');
 const humElement = document.getElementById('txt-hum');
 const datePicker = document.getElementById('date-picker');
-const switchRelay1 = document.getElementById('switch-relay1');
-const switchRelay2 = document.getElementById('switch-relay2');
-const labelRelay1 = document.getElementById('label-relay1');
-const labelRelay2 = document.getElementById('label-relay2');
-const switchRelay3 = document.getElementById('switch-relay3');
-const switchRelay4 = document.getElementById('switch-relay4');
-const labelRelay3 = document.getElementById('label-relay3');
-const labelRelay4 = document.getElementById('label-relay4');
 const statusText = document.getElementById('status-text');
 const statusDot = document.getElementById('status-dot');
 const minTempInput = document.getElementById('min-temp');
@@ -703,7 +765,6 @@ const todayStr = localDate.getFullYear() + '-' + String(localDate.getMonth() + 1
 datePicker.value = todayStr;
 datePicker.max = todayStr;
 
-// Tạo Container Trang Danh sách Thiết bị động
 const deviceSelectionPage = document.createElement("div");
 deviceSelectionPage.id = "device-selection-page";
 deviceSelectionPage.style.cssText = "display:none; padding: 25px; max-width: 1000px; margin: 0 auto; text-align: center; color: white;";
@@ -735,26 +796,41 @@ type: 'line', data: { labels: [], datasets: [{ label: 'Lịch sử Độ Ẩm (%
 options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
 });
 
+// 🟢 HÀM BẬT / TẮT Ô NHẬP PHÚT KHI TÍCH VÀO CHECKBOX LUÂN PHIÊN
+window.toggleLuanPhienInputs = function(i) {
+const chk = document.getElementById(`chk-luanphien-relay${i}`);
+const inputs = document.getElementById(`inputs-luanphien-relay${i}`);
+if (inputs) inputs.style.display = (chk && chk.checked) ? "flex" : "none";
+};
+
+// 🟢 HÀM XỬ LÝ CHUYỂN ĐỔI CHẾ ĐỘ: CHỈ KHI LÀ DONGHO MỚI HIỆN KHỐI LUÂN PHIÊN
 function updateInputType(i) {
 const modeEl = document.getElementById(`mode-relay${i}`);
 const startInput = document.getElementById(`start-relay${i}`);
 const stopInput = document.getElementById(`stop-relay${i}`);
+const boxLuanPhien = document.getElementById(`box-luanphien-relay${i}`);
 if (!modeEl || !startInput || !stopInput) return;
 const mode = modeEl.value;
+
 if (mode === "Manual") {
 startInput.value = "";
 stopInput.value = "";
 }
+
+// CHỈ CHẾ ĐỘ ĐỒNG HỒ MỚI HIỆN BIỂU MẪU LUÂN PHIÊN
 if (mode === "DongHo") {
 startInput.type = "time";
 stopInput.type = "time";
 startInput.removeAttribute("step");
 stopInput.removeAttribute("step");
+if (boxLuanPhien) boxLuanPhien.style.display = "block";
 } else {
 startInput.type = "number";
 stopInput.type = "number";
 startInput.step = "any";
 stopInput.step = "any";
+// CÁC CHẾ ĐỘ KHÁC ẨN HOÀN TOÀN
+if (boxLuanPhien) boxLuanPhien.style.display = "none";
 }
 }
 
@@ -779,6 +855,18 @@ if (minTempInput) minTempInput.value = "";
 if (maxTempInput) maxTempInput.value = "";
 if (minHumInput) minHumInput.value = "";
 if (maxHumInput) maxHumInput.value = "";
+
+for (let i = 1; i <= 4; i++) {
+const chk = document.getElementById(`chk-luanphien-relay${i}`);
+const onT = document.getElementById(`ontime-relay${i}`);
+const offT = document.getElementById(`offtime-relay${i}`);
+const box = document.getElementById(`box-luanphien-relay${i}`);
+if (chk) chk.checked = false;
+if (onT) onT.value = "";
+if (offT) offT.value = "";
+if (box) box.style.display = "none";
+window.toggleLuanPhienInputs(i);
+}
 
 const oldPass = document.getElementById('old-password');
 const newPass = document.getElementById('new-password');
@@ -995,16 +1083,16 @@ return;
 const newDeviceData = {
 TenThietBi: "",
 CauHinh: (currentCategory === "vacxin") 
-? { MaxTemp: "", MinTemp: "" }
-: { MaxHum: "", MaxTemp: "", MinHum: "", MinTemp: "" },
+? { MaxTemp: 0, MinTemp: 0 }
+: { MaxHum: 0, MaxTemp: 0, MinHum: 0, MinTemp: 0 },
 HienTai: (currentCategory === "vacxin")
-? { NhietDo: "", ThoiGian: "" }
-: { DoAm: "", NhietDo: "", ThoiGian: "" },
+? { NhietDo: 0, ThoiGian: "" }
+: { DoAm: 0, NhietDo: 0, ThoiGian: "" },
 DieuKhien: {
-ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 },
-ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 },
-ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 },
-ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", Trigger: 0 }
+ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 },
+ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 },
+ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 },
+ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 }
 },
 device: {
 config: { password: "" },
@@ -1016,7 +1104,7 @@ await set(deviceRef, newDeviceData);
 alert(`🎉 Tạo thiết bị [${formatId.toUpperCase()}] thành công trong ${catTitle}!`);
 } catch (error) {
 console.error("Lỗi tạo thiết bị:", error);
-alert("❌ Lỗi hệ thống: " + error.message);
+alert("❌ Lỗi: " + error.message);
 }
 });
 }
@@ -1075,7 +1163,6 @@ resetDeviceState();
 const catTitle = (currentCategory === "vacxin") ? "Tủ Vacxin" : "Kho Trứng";
 document.getElementById('main-header-title').innerText = `Hệ Thống Giám Sát ${catTitle} Bel Gà Tân Châu 2`;
 
-// Thêm thanh điều hướng quay lại
 let navBar = document.getElementById('nav-top-bar');
 if (!navBar) {
 navBar = document.createElement('div');
@@ -1101,7 +1188,6 @@ hienThiTrangChonPhanHe();
 document.getElementById('btn-back-to-dev-list').innerText = `⬅️ ĐỔI THIẾT BỊ (${catTitle.toUpperCase()})`;
 }
 
-// Ẩn/Hiện thẻ và đồ thị độ ẩm tùy theo phân hệ
 const isVacxin = (currentCategory === "vacxin");
 const cardHumEl = document.getElementById('card-hum');
 const configHumEl = document.getElementById('config-group-hum');
@@ -1111,7 +1197,6 @@ if (cardHumEl) cardHumEl.style.display = isVacxin ? 'none' : 'flex';
 if (configHumEl) configHumEl.style.display = isVacxin ? 'none' : 'block';
 if (chartHumEl) chartHumEl.style.display = isVacxin ? 'none' : 'block';
 
-// Ẩn/Hiện tùy chọn chế độ "Theo Độ Ẩm" ở 4 thiết bị
 document.querySelectorAll('.opt-doam').forEach(opt => {
 opt.style.display = isVacxin ? 'none' : 'block';
 });
@@ -1132,6 +1217,17 @@ document.getElementById(`mode-relay${i}`).value = (isVacxin && data.Mode === "Do
 updateInputType(i);
 document.getElementById(`start-relay${i}`).value = data.Start || "";
 document.getElementById(`stop-relay${i}`).value = data.Stop || "";
+
+// Tự động tải dữ liệu Luân Phiên
+const chkLuanPhien = document.getElementById(`chk-luanphien-relay${i}`);
+const onTimeInput = document.getElementById(`ontime-relay${i}`);
+const offTimeInput = document.getElementById(`offtime-relay${i}`);
+if (chkLuanPhien) {
+    chkLuanPhien.checked = (data.LuanPhien === 1 || data.LuanPhien === true);
+    window.toggleLuanPhienInputs(i);
+}
+if (onTimeInput) onTimeInput.value = data.OnTime ?? "";
+if (offTimeInput) offTimeInput.value = data.OffTime ?? "";
 }
 });
 activeListeners.push(unsubRelayConfig);
@@ -1161,7 +1257,7 @@ switchEl.checked = (status === 1);
 const isInteractiveMode = (currentMode === "Manual" || currentMode === "Timer" || currentMode === "DongHo");
 if (isInteractiveMode && !isIoLocked) {
 switchEl.disabled = false;
-	switchEl.style.cursor = "pointer";
+switchEl.style.cursor = "pointer";
 switchEl.parentElement.style.opacity = "1";
 } else {
 switchEl.disabled = true;
@@ -1238,11 +1334,17 @@ window.toggleKhoaTenKho();
 loadDataByDate(datePicker.value);
 }
 
+// 🟢 HÀM LƯU CẤU HÌNH THIẾT BỊ RELAY
 function saveDeviceConfig(i) {
 const nameEl = document.getElementById(`name-relay${i}`);
 const modeEl = document.getElementById(`mode-relay${i}`);
 const startEl = document.getElementById(`start-relay${i}`);
 const stopEl = document.getElementById(`stop-relay${i}`);
+const chkLuanPhien = document.getElementById(`chk-luanphien-relay${i}`);
+const onTimeEl = document.getElementById(`ontime-relay${i}`);
+const offTimeEl = document.getElementById(`offtime-relay${i}`);
+const switchEl = document.getElementById(`switch-relay${i}`);
+
 const name = nameEl ? nameEl.value : "";
 const mode = modeEl ? modeEl.value : "Manual";
 let start = startEl ? startEl.value.trim() : "";
@@ -1253,7 +1355,7 @@ start = ""; stop = "";
 if (startEl) startEl.value = "";
 if (stopEl) stopEl.value = "";
 set(ref(db, getDbPath(`${currentDeviceId}/DieuKhien/ThietBi${i}_Config`)), {
-Name: name, Mode: "Manual", Start: "", Stop: "", Trigger: Date.now()
+Name: name, Mode: "Manual", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: Date.now()
 });
 set(ref(db, getDbPath(`${currentDeviceId}/DieuKhien/ThietBi${i}`)), 0);
 alert(`✅ Đã lưu cấu hình! Thiết bị ${i} được đưa về Chế độ Thủ công (TẮT).`);
@@ -1273,9 +1375,31 @@ return;
 }
 }
 
-if (mode === "DongHo" && (!start || !stop)) {
+let isLuanPhien = 0;
+let onTime = 0;
+let offTime = 0;
+// Lấy trạng thái công tắc lúc lưu: 1 = Bật trước, 0 = Tắt trước
+let initState = (switchEl && switchEl.checked) ? 1 : 0;
+
+if (mode === "DongHo") {
+if (!start || !stop) {
 alert("⚠️ Vui lòng chọn đầy đủ khung giờ Bắt đầu và Dừng cho chế độ Đồng Hồ!");
 return;
+}
+if (chkLuanPhien && chkLuanPhien.checked) {
+isLuanPhien = 1;
+onTime = parseInt(onTimeEl?.value, 10);
+offTime = parseInt(offTimeEl?.value, 10);
+if (isNaN(onTime) || onTime <= 0 || isNaN(offTime) || offTime <= 0) {
+alert("⚠️ Vui lòng nhập số phút BẬT và số phút TẮT lớn hơn 0 cho cơ chế luân phiên!");
+return;
+}
+}
+} else {
+// CÁC CHẾ ĐỘ KHÁC HUỶ LUÂN PHIÊN
+isLuanPhien = 0;
+onTime = 0;
+offTime = 0;
 }
 
 if ((mode === "NhietDo" || mode === "DoAm") && (start === "" || stop === "")) {
@@ -1283,10 +1407,26 @@ alert(`⚠️ Vui lòng nhập đầy đủ giá trị Bắt đầu và Dừng!`
 return;
 }
 
-set(ref(db, getDbPath(`${currentDeviceId}/DieuKhien/ThietBi${i}_Config`)), {
-Name: name, Mode: mode, Start: start, Stop: stop, Trigger: Date.now()
-}).then(() => {
-alert(`✅ Đã lưu cấu hình thiết bị ${i}!`);
+const configPayload = {
+Name: name,
+Mode: mode,
+Start: start,
+Stop: stop,
+LuanPhien: isLuanPhien,
+OnTime: onTime,
+OffTime: offTime,
+InitState: initState,
+Trigger: Date.now()
+};
+
+set(ref(db, getDbPath(`${currentDeviceId}/DieuKhien/ThietBi${i}_Config`)), configPayload)
+.then(() => {
+let msg = `✅ Đã lưu cấu hình thiết bị ${i}!`;
+if (mode === "DongHo" && isLuanPhien) {
+const chuTrinh = (initState === 1) ? `BẬT ${onTime} phút trước ➔ TẮT ${offTime} phút` : `TẮT ${offTime} phút trước ➔ BẬT ${onTime} phút`;
+msg += `\n🔄 Cơ chế luân phiên: ${chuTrinh} (theo trạng thái công tắc lúc lưu: ${initState === 1 ? 'ON' : 'OFF'}).`;
+}
+alert(msg);
 }).catch(error => alert("❌ Lỗi lưu Firebase: " + error.message));
 }
 
