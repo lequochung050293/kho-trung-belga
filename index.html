@@ -393,8 +393,8 @@ title="Nhấn để Mở / Khóa chỉnh sửa">
 </div>
 <div id="alert-display">Đang kiểm tra trạng thái...</div>
 
-<!-- BẢNG ĐIỀU KHIỂN RELAY -->
-<div class="control-block" style="margin-top: 40px;">
+<!-- BẢNG ĐIỀU KHIỂN RELAY (CHỈ HIỂN THỊ Ở PHÂN HỆ KHO TRỨNG) -->
+<div class="control-block" id="control-block-relay" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
 Bảng Điều Khiển Thiết Bị (Chân IO ESP32)
@@ -1080,20 +1080,23 @@ alert(`❌ Lỗi: Thiết bị [${formatId.toUpperCase()}] đã tồn tại tron
 return;
 }
 
+const isVacxin = (currentCategory === "vacxin");
 const newDeviceData = {
 TenThietBi: "",
-CauHinh: (currentCategory === "vacxin") 
+CauHinh: isVacxin
 ? { MaxTemp: 0, MinTemp: 0 }
 : { MaxHum: 0, MaxTemp: 0, MinHum: 0, MinTemp: 0 },
-HienTai: (currentCategory === "vacxin")
+HienTai: isVacxin
 ? { NhietDo: 0, ThoiGian: "" }
 : { DoAm: 0, NhietDo: 0, ThoiGian: "" },
+...(isVacxin ? {} : {
 DieuKhien: {
 ThietBi1: 0, ThietBi1_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 },
 ThietBi2: 0, ThietBi2_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 },
 ThietBi3: 0, ThietBi3_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 },
 ThietBi4: 0, ThietBi4_Config: { Mode: "Manual", Name: "", Start: "", Stop: "", LuanPhien: 0, OnTime: 0, OffTime: 0, InitState: 0, Trigger: 0 }
-},
+}
+}),
 device: {
 config: { password: "" },
 matkhauthietbi: { password: "" }
@@ -1192,16 +1195,19 @@ const isVacxin = (currentCategory === "vacxin");
 const cardHumEl = document.getElementById('card-hum');
 const configHumEl = document.getElementById('config-group-hum');
 const chartHumEl = document.getElementById('chart-container-hum');
+const relayControlEl = document.getElementById('control-block-relay');
 
 if (cardHumEl) cardHumEl.style.display = isVacxin ? 'none' : 'flex';
 if (configHumEl) configHumEl.style.display = isVacxin ? 'none' : 'block';
 if (chartHumEl) chartHumEl.style.display = isVacxin ? 'none' : 'block';
+if (relayControlEl) relayControlEl.style.display = isVacxin ? 'none' : 'block';
 
 document.querySelectorAll('.opt-doam').forEach(opt => {
 opt.style.display = isVacxin ? 'none' : 'block';
 });
 
-// Khởi tạo listeners cho 4 rơ-le
+// Chỉ đăng ký lắng nghe và điều khiển Relay nếu là phân hệ Kho Trứng
+if (!isVacxin) {
 for (let i = 1; i <= 4; i++) {
 const modeSelect = document.getElementById(`mode-relay${i}`);
 if (modeSelect) {
@@ -1213,7 +1219,7 @@ const unsubRelayConfig = onValue(ref(db, getDbPath(`${currentDeviceId}/DieuKhien
 const data = snapshot.val();
 if (data) {
 document.getElementById(`name-relay${i}`).value = data.Name || "";
-document.getElementById(`mode-relay${i}`).value = (isVacxin && data.Mode === "DoAm") ? "Manual" : (data.Mode || "Manual");
+document.getElementById(`mode-relay${i}`).value = data.Mode || "Manual";
 updateInputType(i);
 document.getElementById(`start-relay${i}`).value = data.Start || "";
 document.getElementById(`stop-relay${i}`).value = data.Stop || "";
@@ -1233,9 +1239,11 @@ if (offTimeInput) offTimeInput.value = data.OffTime ?? "";
 activeListeners.push(unsubRelayConfig);
 
 const btnSave = document.getElementById(`btn-save-relay${i}`);
+if (btnSave) {
 const newBtnSave = btnSave.cloneNode(true);
 btnSave.parentNode.replaceChild(newBtnSave, btnSave);
 newBtnSave.addEventListener('click', () => saveDeviceConfig(i));
+}
 }
 
 const unsubDieuKhien = onValue(ref(db, getDbPath(`${currentDeviceId}/DieuKhien`)), (snapshot) => {
@@ -1247,6 +1255,7 @@ const status = (typeof val === "object" && val !== null) ? val.TrangThai : val;
 const config = data[`ThietBi${i}_Config`];
 const switchEl = document.getElementById(`switch-relay${i}`);
 const labelEl = document.getElementById(`label-relay${i}`);
+if (!switchEl || !labelEl) continue;
 const deviceName = config ? config.Name : `TB ${i}`;
 const currentMode = config ? config.Mode : "Manual";
 
@@ -1268,6 +1277,19 @@ switchEl.parentElement.style.opacity = "0.5";
 }
 });
 activeListeners.push(unsubDieuKhien);
+
+for (let i = 1; i <= 4; i++) {
+const switchEl = document.getElementById(`switch-relay${i}`);
+if (switchEl) {
+const newSwitchEl = switchEl.cloneNode(true);
+switchEl.parentNode.replaceChild(newSwitchEl, switchEl);
+newSwitchEl.addEventListener('change', (e) => {
+const status = e.target.checked ? 1 : 0;
+set(ref(db, getDbPath(`${currentDeviceId}/DieuKhien/ThietBi${i}`)), status);
+});
+}
+}
+}
 
 const unsubCauHinh = onValue(ref(db, getDbPath(`${currentDeviceId}/CauHinh`)), (snapshot) => {
 const data = snapshot.val();
@@ -1302,16 +1324,6 @@ latestTimeStr = "";
 }
 });
 activeListeners.push(unsubHienTai);
-
-for (let i = 1; i <= 4; i++) {
-const switchEl = document.getElementById(`switch-relay${i}`);
-const newSwitchEl = switchEl.cloneNode(true);
-switchEl.parentNode.replaceChild(newSwitchEl, switchEl);
-newSwitchEl.addEventListener('change', (e) => {
-const status = e.target.checked ? 1 : 0;
-set(ref(db, getDbPath(`${currentDeviceId}/DieuKhien/ThietBi${i}`)), status);
-});
-}
 
 const inputTenKho = document.getElementById('input-ten-kho');
 if (inputTenKho) {
