@@ -259,7 +259,7 @@ HỆ THỐNG GIÁM SÁT & ĐIỀU KHIỂN BEL GÀ
 <p class="subtitle" style="margin: 0;">Mặc định hiển thị ngày hôm nay - Chọn ngày để xem lịch sử cũ</p>
 </div>
 
-<!-- LOGO TRÒN BEL GÀ -->
+<!-- LOGO TRÒN BEL GÀ NGUYÊN BẢN -->
 <div class="logo-container">
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin: 20px 0;">
 <div style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 2px solid #ccff00; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -320,7 +320,7 @@ HỆ THỐNG GIÁM SÁT & ĐIỀU KHIỂN BEL GÀ
 </div>
 </div>
 
-<!-- NÚT TELEGRAM -->
+<!-- NÚT TELEGRAM NGUYÊN BẢN -->
 <div style="text-align: center; margin: 0 auto 20px auto; width: fit-content;">
 <a href="https://t.me/Canhbaokhotrung" target="_blank" style="display: flex; align-items: center; justify-content: center; background: #0088cc; color: #ffffff !important; padding: 8px 16px 8px 8px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background 0.3s;">
 <div style="width: 32px; height: 32px; margin-right: 8px; display: flex; align-items: center; justify-content: center;">
@@ -361,7 +361,7 @@ title="Nhấn để Mở / Khóa chỉnh sửa">
 </div>
 </div>
 
-<!-- KHỐI CARD THÔNG TIN CẢM BIẾN -->
+<!-- KHỐI CARD THÔNG TIN CẢM BIẾN NGUYÊN BẢN -->
 <div class="card-container">
 <!-- Card Nhiệt Độ -->
 <div class="card temp" id="card-temp">
@@ -393,7 +393,7 @@ title="Nhấn để Mở / Khóa chỉnh sửa">
 </div>
 <div id="alert-display">Đang kiểm tra trạng thái...</div>
 
-<!-- BẢNG ĐIỀU KHIỂN RELAY (CHỈ HIỂN THỊ Ở PHÂN HỆ KHO TRỨNG) -->
+<!-- BẢNG ĐIỀU KHIỂN RELAY NGUYÊN BẢN (CHỈ HIỂN THỊ Ở KHO TRỨNG) -->
 <div class="control-block" id="control-block-relay" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -429,7 +429,7 @@ Bảng Điều Khiển Thiết Bị (Chân IO ESP32)
             <input type="number" id="stop-relay1" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
         </div>
     </div>
-    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB1 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB1 -->
     <div id="box-luanphien-relay1" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
         <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
             <input type="checkbox" id="chk-luanphien-relay1" onchange="window.toggleLuanPhienInputs(1)">
@@ -473,7 +473,7 @@ Bảng Điều Khiển Thiết Bị (Chân IO ESP32)
             <input type="number" id="stop-relay2" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
         </div>
     </div>
-    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB2 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB2 -->
     <div id="box-luanphien-relay2" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
         <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
             <input type="checkbox" id="chk-luanphien-relay2" onchange="window.toggleLuanPhienInputs(2)">
@@ -517,7 +517,7 @@ Bảng Điều Khiển Thiết Bị (Chân IO ESP32)
             <input type="number" id="stop-relay3" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
         </div>
     </div>
-    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB3 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB3 -->
     <div id="box-luanphien-relay3" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
         <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
             <input type="checkbox" id="chk-luanphien-relay3" onchange="window.toggleLuanPhienInputs(3)">
@@ -561,7 +561,7 @@ Bảng Điều Khiển Thiết Bị (Chân IO ESP32)
             <input type="number" id="stop-relay4" style="width: 100%; background: #333; color: white; padding: 5px; border: none; border-radius: 4px;">
         </div>
     </div>
-    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB4 (CHỈ XUẤT HIỆN KHI CHỌN MODE DONGHO) -->
+    <!-- KHỐI CƠ CHẾ LUÂN PHIÊN TB4 -->
     <div id="box-luanphien-relay4" style="display: none; width: 100%; background: #252525; padding: 8px; border-radius: 6px; border: 1px dashed #555; box-sizing: border-box;">
         <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #00adb5; cursor: pointer; font-weight: bold; margin-bottom: 6px;">
             <input type="checkbox" id="chk-luanphien-relay4" onchange="window.toggleLuanPhienInputs(4)">
@@ -587,7 +587,7 @@ Bảng Điều Khiển Thiết Bị (Chân IO ESP32)
 </div>
 </div>
 
-<!-- THIẾT LẬP NGƯỠNG CẢNH BÁO -->
+<!-- THIẾT LẬP NGƯỠNG CẢNH BÁO NGUYÊN BẢN -->
 <div class="control-block" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -631,7 +631,45 @@ Thiết lập ngưỡng cảnh báo (Min/Max)
 <button class="btn-action btn-save-config" id="btn-save-config" style="background: #2196f3; color: white;">LƯU CẤU HÌNH CẢNH BÁO</button>
 </div>
 
-<!-- CÀI ĐẶT MẬT KHẨU CẤU HÌNH -->
+<!-- 🟢 THẺ HIỆU CHUẨN & BÙ NHIỆT ĐỘ CẢM BIẾN (2 NTC TỦ VACXIN) -->
+<div class="control-block" id="control-block-offset" style="margin-top: 40px; display: none;">
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
+<label class="title-label" style="color: #00adb5; margin: 0; font-weight: bold; font-size: 13px;">
+HIỆU CHUẨN & BÙ NHIỆT ĐỘ CẢM BIẾN (2 NTC)
+</label>
+<svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="cursor: pointer; color: #00adb5;">
+<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+</div>
+
+<!-- HƯỚNG DẪN QUY TẮC BÙ NHIỆT ĐỘ -->
+<div style="background: #1e1e1e; border: 1px dashed #444; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 12px; color: #bbb; line-height: 1.6;">
+<b style="color: #00adb5;">💡 HƯỚNG DẪN BÙ NHIỆT ĐỘ THEO NHIỆT KẾ THỰC TẾ:</b><br>
+• <span style="color:#ff5722; font-weight:bold;">Cảm biến đọc CAO HƠN nhiệt kế:</span> Nhập số âm <b>-a</b> để trừ bớt <i>(VD: NTC đo 6.5°C, nhiệt kế chuẩn 6.0°C ➔ Nhập <b>-0.5</b>)</i>.<br>
+• <span style="color:#4caf50; font-weight:bold;">Cảm biến đọc THẤP HƠN nhiệt kế:</span> Nhập số dương <b>a</b> để cộng thêm <i>(VD: NTC đo 5.7°C, nhiệt kế chuẩn 6.0°C ➔ Nhập <b>0.3</b>)</i>.
+</div>
+
+<div class="config-inputs" style="display: flex; gap: 15px; flex-wrap: wrap;">
+<div class="config-group temp" style="flex: 1; min-width: 200px;">
+<label style="color: #00adb5; font-size: 12px; font-weight: bold;">NTC 1 - Tủ Vacxin 1 (°C)</label>
+<div class="input-pair">
+<input type="number" id="offset-ntc1" placeholder="Nhập -a hoặc a..." step="0.1" disabled style="width: 100%; background: #1e1e1e; color: #00adb5; border: 1px solid #333; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; outline: none; text-align: center;">
+</div>
+</div>
+
+<div class="config-group temp" style="flex: 1; min-width: 200px;">
+<label style="color: #00adb5; font-size: 12px; font-weight: bold;">NTC 2 - Tủ Vacxin 2 (°C)</label>
+<div class="input-pair">
+<input type="number" id="offset-ntc2" placeholder="Nhập -a hoặc a..." step="0.1" disabled style="width: 100%; background: #1e1e1e; color: #00adb5; border: 1px solid #333; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; outline: none; text-align: center;">
+</div>
+</div>
+</div>
+
+<button class="btn-action" id="btn-toggle-lock-offset" style="background: #555; color: white; margin-top: 15px; margin-bottom: 5px;">🔓 MỞ KHÓA CHỈNH SỬA</button>
+<button class="btn-action" id="btn-save-offset" style="background: #00adb5; color: white; font-weight: bold;">💾 LƯU BÙ NHIỆT ĐỘ VÀO ESP32</button>
+</div>
+
+<!-- CÀI ĐẶT MẬT KHẨU CẤU HÌNH NGUYÊN BẢN -->
 <div class="control-block" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -661,7 +699,7 @@ style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #2d
 </div>
 </div>
 
-<!-- LỊCH SỬ & BIỂU ĐỒ -->
+<!-- LỊCH SỬ & BIỂU ĐỒ NGUYÊN BẢN -->
 <div class="control-block" style="margin-top: 40px;">
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;">
 <label class="title-label" style="color: #ccff00; margin: 0; font-weight: bold;">
@@ -751,8 +789,16 @@ const alertDisplay = document.getElementById('alert-display');
 const btnToggleLock = document.getElementById('btn-toggle-lock');
 const btnLockIo = document.getElementById('btn-lock-io');
 
+// Biến điều khiển Bù Nhiệt Độ (2 NTC)
+const controlBlockOffset = document.getElementById('control-block-offset');
+const offsetNtc1Input = document.getElementById('offset-ntc1');
+const offsetNtc2Input = document.getElementById('offset-ntc2');
+const btnToggleLockOffset = document.getElementById('btn-toggle-lock-offset');
+const btnSaveOffset = document.getElementById('btn-save-offset');
+
 let isLocked = true;
 let isIoLocked = true;
+let isOffsetLocked = true;
 let excelRawData = [];
 let configMinTemp = 0, configMaxTemp = 100;
 let configMinHum = 0, configMaxHum = 100;
@@ -796,14 +842,12 @@ type: 'line', data: { labels: [], datasets: [{ label: 'Lịch sử Độ Ẩm (%
 options: optionsCommon('#00bcd4', 'Độ Ẩm (%)')
 });
 
-// 🟢 HÀM BẬT / TẮT Ô NHẬP PHÚT KHI TÍCH VÀO CHECKBOX LUÂN PHIÊN
 window.toggleLuanPhienInputs = function(i) {
 const chk = document.getElementById(`chk-luanphien-relay${i}`);
 const inputs = document.getElementById(`inputs-luanphien-relay${i}`);
 if (inputs) inputs.style.display = (chk && chk.checked) ? "flex" : "none";
 };
 
-// 🟢 HÀM XỬ LÝ CHUYỂN ĐỔI CHẾ ĐỘ: CHỈ KHI LÀ DONGHO MỚI HIỆN KHỐI LUÂN PHIÊN
 function updateInputType(i) {
 const modeEl = document.getElementById(`mode-relay${i}`);
 const startInput = document.getElementById(`start-relay${i}`);
@@ -817,7 +861,6 @@ startInput.value = "";
 stopInput.value = "";
 }
 
-// CHỈ CHẾ ĐỘ ĐỒNG HỒ MỚI HIỆN BIỂU MẪU LUÂN PHIÊN
 if (mode === "DongHo") {
 startInput.type = "time";
 stopInput.type = "time";
@@ -829,7 +872,6 @@ startInput.type = "number";
 stopInput.type = "number";
 startInput.step = "any";
 stopInput.step = "any";
-// CÁC CHẾ ĐỘ KHÁC ẨN HOÀN TOÀN
 if (boxLuanPhien) boxLuanPhien.style.display = "none";
 }
 }
@@ -855,6 +897,8 @@ if (minTempInput) minTempInput.value = "";
 if (maxTempInput) maxTempInput.value = "";
 if (minHumInput) minHumInput.value = "";
 if (maxHumInput) maxHumInput.value = "";
+if (offsetNtc1Input) offsetNtc1Input.value = "";
+if (offsetNtc2Input) offsetNtc2Input.value = "";
 
 for (let i = 1; i <= 4; i++) {
 const chk = document.getElementById(`chk-luanphien-relay${i}`);
@@ -1032,8 +1076,8 @@ card.innerHTML = `
 </p>
 ${cardSensorHtml}
 <div style="position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 8px; align-items: center;">
-<button class="btn-delete-device" style="background: #d32f2f; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="Xóa thiết bị">🗑️</button>
-<button class="btn-lock-device" style="background: #424242; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s;" title="${hasDeletePassword ? 'Nút xóa đang được khóa (Nhấn để mở khóa)' : 'Nút xóa chưa khóa (Nhấn để khóa)'}">${lockIcon}</button>
+<button class="btn-delete-device" style="background: #d32f2f; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;" title="Xóa thiết bị">🗑️</button>
+<button class="btn-lock-device" style="background: #424242; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;" title="${hasDeletePassword ? 'Nút xóa đang được khóa' : 'Nút xóa chưa khóa'}">${lockIcon}</button>
 </div>
 `;
 card.onmouseover = () => card.style.background = "#2d2d2d";
@@ -1084,7 +1128,7 @@ const isVacxin = (currentCategory === "vacxin");
 const newDeviceData = {
 TenThietBi: "",
 CauHinh: isVacxin
-? { MaxTemp: 0, MinTemp: 0 }
+? { MaxTemp: 0, MinTemp: 0, Offset: 0 }
 : { MaxHum: 0, MaxTemp: 0, MinHum: 0, MinTemp: 0 },
 HienTai: isVacxin
 ? { NhietDo: 0, ThoiGian: "" }
@@ -1201,6 +1245,7 @@ if (cardHumEl) cardHumEl.style.display = isVacxin ? 'none' : 'flex';
 if (configHumEl) configHumEl.style.display = isVacxin ? 'none' : 'block';
 if (chartHumEl) chartHumEl.style.display = isVacxin ? 'none' : 'block';
 if (relayControlEl) relayControlEl.style.display = isVacxin ? 'none' : 'block';
+if (controlBlockOffset) controlBlockOffset.style.display = isVacxin ? 'block' : 'none';
 
 document.querySelectorAll('.opt-doam').forEach(opt => {
 opt.style.display = isVacxin ? 'none' : 'block';
@@ -1224,7 +1269,6 @@ updateInputType(i);
 document.getElementById(`start-relay${i}`).value = data.Start || "";
 document.getElementById(`stop-relay${i}`).value = data.Stop || "";
 
-// Tự động tải dữ liệu Luân Phiên
 const chkLuanPhien = document.getElementById(`chk-luanphien-relay${i}`);
 const onTimeInput = document.getElementById(`ontime-relay${i}`);
 const offTimeInput = document.getElementById(`offtime-relay${i}`);
@@ -1289,6 +1333,17 @@ set(ref(db, getDbPath(`${currentDeviceId}/DieuKhien/ThietBi${i}`)), status);
 });
 }
 }
+}
+
+// 🟢 Lắng nghe cấu hình Bù Nhiệt Độ (NTC 1 & NTC 2 của Tủ Vacxin)
+if (isVacxin) {
+  const unsubOffset1 = onValue(ref(db, "devices_vacxin/vacxin1/CauHinh/Offset"), (snapshot) => {
+    if (offsetNtc1Input) offsetNtc1Input.value = snapshot.exists() ? snapshot.val() : 0;
+  });
+  const unsubOffset2 = onValue(ref(db, "devices_vacxin/vacxin2/CauHinh/Offset"), (snapshot) => {
+    if (offsetNtc2Input) offsetNtc2Input.value = snapshot.exists() ? snapshot.val() : 0;
+  });
+  activeListeners.push(unsubOffset1, unsubOffset2);
 }
 
 const unsubCauHinh = onValue(ref(db, getDbPath(`${currentDeviceId}/CauHinh`)), (snapshot) => {
@@ -1390,7 +1445,6 @@ return;
 let isLuanPhien = 0;
 let onTime = 0;
 let offTime = 0;
-// Lấy trạng thái công tắc lúc lưu: 1 = Bật trước, 0 = Tắt trước
 let initState = (switchEl && switchEl.checked) ? 1 : 0;
 
 if (mode === "DongHo") {
@@ -1408,7 +1462,6 @@ return;
 }
 }
 } else {
-// CÁC CHẾ ĐỘ KHÁC HUỶ LUÂN PHIÊN
 isLuanPhien = 0;
 onTime = 0;
 offTime = 0;
@@ -1554,6 +1607,7 @@ this.innerText = isIoLocked ? "🔒 MỞ KHÓA CHỈNH SỬA" : "🔓 KHÓA LẠ
 this.style.background = isIoLocked ? "#555" : "#f44336";
 });
 
+// 🟢 LƯU CẤU HÌNH NGƯỠNG (DÙNG UPDATE ĐỂ KHÔNG MẤT GIÁ TRỊ OFFSET)
 btnSaveConfig.addEventListener('click', () => {
 const isVacxin = (currentCategory === "vacxin");
 const dataConfig = isVacxin ? {
@@ -1566,13 +1620,64 @@ MinHum: parseInt(minHumInput.value) || 0,
 MaxHum: parseInt(maxHumInput.value) || 0
 };
 
-set(ref(db, getDbPath(`${currentDeviceId}/CauHinh`)), dataConfig).then(() => {
+update(ref(db, getDbPath(`${currentDeviceId}/CauHinh`)), dataConfig).then(() => {
 alert("✅ Đã lưu cấu hình!");
 isLocked = true;
 [minTempInput, maxTempInput, minHumInput, maxHumInput].forEach(el => { if (el) el.disabled = true; });
 btnToggleLock.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
 btnToggleLock.style.background = "#555";
 }).catch(e => alert("Lỗi: " + e.message));
+});
+
+// 🟢 MỞ / KHÓA BÙ NHIỆT ĐỘ CHO 2 NTC
+btnToggleLockOffset.addEventListener('click', async () => {
+  if (isOffsetLocked) {
+    const userPassword = prompt("Vui lòng nhập mật khẩu để mở khóa bù nhiệt độ:");
+    if (userPassword === null) return;
+    if (userPassword.trim() === "") { alert("❌ Vui lòng không để trống mật khẩu!"); return; }
+    try {
+      const snapshot = await get(ref(db, getDbPath(`${currentDeviceId}/device/config/password`)));
+      if (snapshot.exists() && snapshot.val() !== "") {
+        if (CryptoJS.SHA256(userPassword.trim()).toString() !== snapshot.val()) {
+          alert("❌ Mật khẩu không chính xác!");
+          return;
+        }
+      } else {
+        alert("⚠️ Hệ thống chưa cấu hình mật khẩu trên Firebase. Tự động mở khóa.");
+      }
+      isOffsetLocked = false;
+      alert("🔓 Mở khóa thành công! Bạn có thể chỉnh sửa bù nhiệt độ cho 2 NTC.");
+    } catch (error) {
+      alert("❌ Lỗi xác thực: " + error.message);
+      return;
+    }
+  } else {
+    isOffsetLocked = true;
+  }
+  [offsetNtc1Input, offsetNtc2Input].forEach(el => { if (el) el.disabled = isOffsetLocked; });
+  btnToggleLockOffset.innerText = isOffsetLocked ? "🔒 MỞ KHÓA CHỈNH SỬA" : "🔓 KHÓA LẠI";
+  btnToggleLockOffset.style.background = isOffsetLocked ? "#555" : "#f44336";
+});
+
+// 🟢 LƯU BÙ NHIỆT ĐỘ CHO 2 NTC VÀO FIREBASE
+btnSaveOffset.addEventListener('click', async () => {
+  const val1 = parseFloat(offsetNtc1Input.value) || 0;
+  const val2 = parseFloat(offsetNtc2Input.value) || 0;
+
+  try {
+    await Promise.all([
+      update(ref(db, "devices_vacxin/vacxin1/CauHinh"), { Offset: val1 }),
+      update(ref(db, "devices_vacxin/vacxin2/CauHinh"), { Offset: val2 })
+    ]);
+
+    alert(`✅ Đã lưu cấu hình bù nhiệt độ thành công!\n• NTC 1 (Tủ 1): ${val1 >= 0 ? '+' : ''}${val1} °C\n• NTC 2 (Tủ 2): ${val2 >= 0 ? '+' : ''}${val2} °C\n\nFirebase đã gửi dữ liệu về ESP32 để lưu Flash/EEPROM và tính toán xuất ra LED 7 đoạn.`);
+    isOffsetLocked = true;
+    [offsetNtc1Input, offsetNtc2Input].forEach(el => { if (el) el.disabled = true; });
+    btnToggleLockOffset.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
+    btnToggleLockOffset.style.background = "#555";
+  } catch (e) {
+    alert("❌ Lỗi khi lưu Firebase: " + e.message);
+  }
 });
 
 document.getElementById('btn-set-password').addEventListener('click', async () => {
@@ -1686,6 +1791,10 @@ btnLockIo.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
 btnLockIo.style.background = "#555";
 btnToggleLock.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
 btnToggleLock.style.background = "#555";
+if (btnToggleLockOffset) {
+  btnToggleLockOffset.innerText = "🔒 MỞ KHÓA CHỈNH SỬA";
+  btnToggleLockOffset.style.background = "#555";
+}
 });
 
 window.toggleKhoaTenKho = async function() {
